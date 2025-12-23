@@ -596,8 +596,6 @@ class FolderShare {
 			path: msg.path,
 			timeout,
 		})
-
-		this.sendUploadResponse(peerId, msg.path, true, "Upload started")
 	}
 
 	handleUploadChunk(peerId, msg) {
