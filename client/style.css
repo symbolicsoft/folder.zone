@@ -169,7 +169,7 @@ body {
 	border-radius: var(--radius-sm);
 	font-size: 10px;
 	font-weight: 600;
-	color: var(--accent-soft);
+	color: white;
 	white-space: nowrap;
 }
 
@@ -938,6 +938,18 @@ body {
 	color: var(--text-secondary);
 	margin-bottom: 24px;
 	line-height: 1.6;
+}
+
+/* Supported Browser Badges */
+.supported-browser {
+	display: inline-block;
+	padding: 6px 12px;
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-primary);
 }
 
 /* Empty State */

@@ -237,6 +237,39 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 			</div>
 		</div>
 
+		<!-- Unsupported Browser Dialog -->
+		<div id="unsupported-browser" class="error-overlay" hidden>
+			<div class="error-dialog">
+				<div class="error-icon" style="background: var(--error-bg); border-color: var(--error-color)">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+					</svg>
+				</div>
+				<h2 class="error-title">Unsupported Browser</h2>
+				<p class="error-message">folder.zone requires the File System Access API, which your browser does not support.</p>
+				<p class="error-message" style="margin-top: 12px; font-size: 13px; color: var(--text-secondary)">Please use one of these browsers:</p>
+				<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px">
+					<span class="supported-browser">Chrome</span>
+					<span class="supported-browser">Edge</span>
+					<span class="supported-browser">Brave</span>
+					<span class="supported-browser">Vivaldi</span>
+					<span class="supported-browser">Opera</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Browser compatibility check (runs before main app) -->
+		<script>
+			;(function () {
+				var isSupported = typeof window.showDirectoryPicker === "function" && typeof window.crypto !== "undefined" && typeof window.crypto.subtle !== "undefined" && typeof window.RTCPeerConnection !== "undefined" && typeof window.WebSocket !== "undefined"
+				if (!isSupported) {
+					document.getElementById("unsupported-browser").hidden = false
+					document.getElementById("host-view").style.display = "none"
+					document.getElementById("peer-view").style.display = "none"
+				}
+			})()
+		</script>
+
 		<script src="/client.js" type="module"></script>
 	</body>
 </html>
