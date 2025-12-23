@@ -20,6 +20,5 @@ primary_region = 'cdg'
     versions = ['TLSv1.3']
 
 [[vm]]
-  memory = '512mb'
-  cpus = 1
-  memory_mb = 512
+  cpus = 2
+  memory_mb = 2048
