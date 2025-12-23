@@ -1,0 +1,242 @@
+<!--
+SPDX-License-Identifier: AGPL-3.0-or-later
+Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
+-->
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>folder.zone - P2P Encrypted Folder Sharing</title>
+		<meta name="description" content="Share folders live from your browser with end-to-end encryption. Peer-to-peer, no upload, no accounts. Just send a link." />
+
+		<!-- OpenGraph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://folder.zone/" />
+		<meta property="og:title" content="folder.zone - P2P Encrypted Folder Sharing" />
+		<meta property="og:description" content="Share folders live from your browser with end-to-end encryption. Peer-to-peer, no upload, no accounts. Just send a link." />
+		<meta property="og:image" content="https://folder.zone/images/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="folder.zone - P2P Encrypted Folder Sharing" />
+		<meta name="twitter:description" content="Share folders live from your browser with end-to-end encryption. Peer-to-peer, no upload, no accounts. Just send a link." />
+		<meta name="twitter:image" content="https://folder.zone/images/og.png" />
+
+		<link rel="icon" type="image/png" href="/images/favicon.png" />
+		<link rel="apple-touch-icon" href="/images/favicon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="/style.css" />
+	</head>
+	<body>
+		<!-- Host View -->
+		<div id="host-view" class="container">
+			<!-- Header -->
+			<div class="header">
+				<div class="header-left">
+					<div class="logo">
+						<img src="/images/favicon.png" alt="folder.zone" class="logo-icon" />
+						<div class="logo-text">folder<span>.zone</span></div>
+					</div>
+					<div class="security-badge">
+						<span>Beta</span>
+					</div>
+				</div>
+				<div id="host-peer-status" class="connection-status" hidden>
+					<span class="status-dot connected"></span>
+					<span id="peer-count">0 connected</span>
+				</div>
+			</div>
+
+			<!-- Breadcrumb -->
+			<div id="breadcrumb" class="breadcrumb"></div>
+
+			<!-- Content -->
+			<div class="content">
+				<!-- Welcome Screen -->
+				<div id="welcome-screen" class="welcome">
+					<h1 class="welcome-title">Share end-to-end encrypted folders live.</h1>
+					<p class="welcome-text">folder.zone lets you share a local folder with anyone, live from your browser, just by sending them a link. Connections are end-to-end encrypted, peer-to-peer: we never see your files.</p>
+					<p><strong>Keep your browser window open: closing it terminates the connection.</strong></p>
+					<br />
+					<div class="feature-list">
+						<div class="feature-item">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+							</svg>
+							<span>End-to-End Encrypted</span>
+						</div>
+						<div class="feature-item">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+							</svg>
+							<span>Peer-to-Peer</span>
+						</div>
+						<div class="feature-item">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+							</svg>
+							<span>Open Source</span>
+						</div>
+					</div>
+
+					<button id="select-folder" class="btn btn-primary">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+						</svg>
+						Select Folder
+					</button>
+				</div>
+
+				<!-- File Grid -->
+				<div id="file-grid" class="file-grid" hidden></div>
+			</div>
+
+			<!-- Share Panel -->
+			<div id="share-panel" class="share-panel" hidden>
+				<div class="share-label">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+					</svg>
+					<span>Share Link</span>
+				</div>
+				<div class="share-row">
+					<input type="text" id="share-link" class="share-input" readonly placeholder="Share link will appear here..." />
+					<button id="copy-link" class="btn btn-secondary">
+						<svg class="icon-copy" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+						</svg>
+						<svg class="icon-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" hidden>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+						</svg>
+						<span>Copy</span>
+					</button>
+				</div>
+				<div class="share-options">
+					<label class="checkbox">
+						<input type="checkbox" id="allow-write" />
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+						</svg>
+						Allow uploads
+					</label>
+					<span id="peer-count-label" class="peer-count">0 connected</span>
+				</div>
+			</div>
+
+			<!-- Status Bar -->
+			<div class="status-bar">
+				<span id="status-text">Ready</span>
+				<span id="status-items">0 items</span>
+			</div>
+
+			<!-- Footer -->
+			<div class="footer">
+				<span class="footer-brand">folder.zone</span>
+				<span class="footer-divider">·</span>
+				<span class="footer-text">a public service from <a href="https://symbolic.software">Symbolic Software</a></span>
+				<span class="footer-divider">·</span>
+				<a href="https://github.com/symbolicsoft/folder.zone" target="_blank" rel="noopener" class="footer-link">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+						<path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+					</svg>
+					Source
+				</a>
+			</div>
+		</div>
+
+		<!-- Peer View -->
+		<div id="peer-view" class="container" hidden>
+			<!-- Header -->
+			<div class="header">
+				<div class="header-left">
+					<div class="logo">
+						<img src="/images/favicon.png" alt="folder.zone" class="logo-icon" />
+						<div class="logo-text">folder<span>.zone</span></div>
+					</div>
+					<div class="security-badge">
+						<span>Beta</span>
+					</div>
+				</div>
+				<div id="connection-status-container" class="connection-status">
+					<span id="status-dot" class="status-dot connecting"></span>
+					<span id="connection-status">Connecting...</span>
+					<span id="connection-mode" class="connection-mode" hidden></span>
+				</div>
+			</div>
+
+			<!-- Breadcrumb -->
+			<div id="peer-breadcrumb" class="breadcrumb"></div>
+
+			<!-- Content -->
+			<div class="content">
+				<div id="peer-file-grid" class="file-grid"></div>
+			</div>
+
+			<!-- Upload Section -->
+			<div id="upload-section" class="upload-section" hidden>
+				<div id="upload-dropzone" class="dropzone">
+					<svg class="dropzone-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+					</svg>
+					<p class="dropzone-text">Drop files or folders here</p>
+					<p class="dropzone-hint">or use the buttons below</p>
+					<div class="upload-buttons">
+						<button id="upload-files-btn" class="btn btn-secondary btn-small">Upload Files</button>
+						<button id="upload-folder-btn" class="btn btn-secondary btn-small">Upload Folder</button>
+					</div>
+					<input type="file" id="upload-input" multiple hidden />
+					<input type="file" id="upload-folder-input" webkitdirectory hidden />
+				</div>
+				<div id="upload-progress-list" class="progress-list"></div>
+			</div>
+
+			<!-- Download Progress -->
+			<div id="download-section" class="download-section" hidden>
+				<div class="download-section-title">Downloading...</div>
+				<div id="download-progress-list" class="progress-list"></div>
+			</div>
+
+			<!-- Status Bar -->
+			<div class="status-bar">
+				<span id="peer-status-text">Connecting...</span>
+				<span id="peer-status-items">0 items</span>
+			</div>
+
+			<!-- Footer -->
+			<div class="footer">
+				<span class="footer-brand">folder.zone</span>
+				<span class="footer-divider">·</span>
+				<span class="footer-text">a public service from <a href="https://symbolic.software">Symbolic Software</a></span>
+				<span class="footer-divider">·</span>
+				<a href="https://github.com/symbolicsoft/folder.zone" target="_blank" rel="noopener" class="footer-link">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+						<path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+					</svg>
+					Source
+				</a>
+			</div>
+		</div>
+
+		<!-- Error Dialog -->
+		<div id="error-dialog" class="error-overlay" hidden>
+			<div class="error-dialog">
+				<div class="error-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+					</svg>
+				</div>
+				<h2 class="error-title">Something went wrong</h2>
+				<p id="error-text" class="error-message">An error occurred.</p>
+				<button class="btn btn-primary" onclick="document.getElementById('error-dialog').hidden = true">Dismiss</button>
+			</div>
+		</div>
+
+		<script src="/client.js" type="module"></script>
+	</body>
+</html>
