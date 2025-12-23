@@ -335,7 +335,7 @@ export class PeerConnection {
 				// Channel died after send but onerror didn't catch it, retry via relay
 				console.log("WebRTC send failed asynchronously, retrying via relay")
 				this.pendingSend = null
-				this.signaling.sendBinaryRelay(this.peerId, encrypted)
+				await this.signaling.sendBinaryRelay(this.peerId, encrypted)
 				return
 			} else {
 				// Buffer too full, queue and wait
@@ -346,8 +346,8 @@ export class PeerConnection {
 				return
 			}
 		}
-		// Use relay as fallback - send binary directly
-		this.signaling.sendBinaryRelay(this.peerId, encrypted)
+		// Use relay as fallback - send binary directly (with flow control)
+		await this.signaling.sendBinaryRelay(this.peerId, encrypted)
 	}
 
 	close() {

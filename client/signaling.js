@@ -2,6 +2,8 @@
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 const BINARY_RELAY = 1
+const WS_BUFFER_THRESHOLD = 4 * 1024 * 1024 // 4MB - same as WebRTC
+const WS_BUFFER_CHECK_INTERVAL = 50 // ms
 
 export class Signaling {
 	constructor(onMessage, onError, onBinaryRelay) {
@@ -68,16 +70,27 @@ export class Signaling {
 	}
 
 	// Send binary relay message: [type(1)][peerIdLen(2)][peerId][data]
-	sendBinaryRelay(targetPeerId, data) {
-		if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-			const peerIdBytes = new TextEncoder().encode(targetPeerId)
-			const msg = new Uint8Array(3 + peerIdBytes.length + data.length)
-			msg[0] = BINARY_RELAY
-			msg[1] = (peerIdBytes.length >> 8) & 0xff
-			msg[2] = peerIdBytes.length & 0xff
-			msg.set(peerIdBytes, 3)
-			msg.set(data, 3 + peerIdBytes.length)
-			this.ws.send(msg)
+	// Returns a promise that resolves when buffer has space (flow control)
+	async sendBinaryRelay(targetPeerId, data) {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+			return
 		}
+
+		// Wait for buffer to drain if it's too full (backpressure)
+		while (this.ws.bufferedAmount > WS_BUFFER_THRESHOLD) {
+			await new Promise((r) => setTimeout(r, WS_BUFFER_CHECK_INTERVAL))
+			if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+				return
+			}
+		}
+
+		const peerIdBytes = new TextEncoder().encode(targetPeerId)
+		const msg = new Uint8Array(3 + peerIdBytes.length + data.length)
+		msg[0] = BINARY_RELAY
+		msg[1] = (peerIdBytes.length >> 8) & 0xff
+		msg[2] = peerIdBytes.length & 0xff
+		msg.set(peerIdBytes, 3)
+		msg.set(data, 3 + peerIdBytes.length)
+		this.ws.send(msg)
 	}
 }
