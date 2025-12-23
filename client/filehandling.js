@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { CHUNK_SIZE } from "./config.js"
+import {
+	CHUNK_SIZE
+} from "./config.js"
 
 export async function listFiles(dirHandle, path = "") {
 	const files = []
@@ -39,7 +41,11 @@ export async function readFileChunked(fileHandle, chunkSize = CHUNK_SIZE) {
 		chunks.push(await slice.arrayBuffer())
 		offset += chunkSize
 	}
-	return { chunks, size: file.size, name: file.name }
+	return {
+		chunks,
+		size: file.size,
+		name: file.name
+	}
 }
 
 export async function writeFile(dirHandle, path, data) {
@@ -47,11 +53,15 @@ export async function writeFile(dirHandle, path, data) {
 	let current = dirHandle
 
 	for (let i = 0; i < parts.length - 1; i++) {
-		current = await current.getDirectoryHandle(parts[i], { create: true })
+		current = await current.getDirectoryHandle(parts[i], {
+			create: true
+		})
 	}
 
 	const filename = parts[parts.length - 1]
-	const fileHandle = await current.getFileHandle(filename, { create: true })
+	const fileHandle = await current.getFileHandle(filename, {
+		create: true
+	})
 	const writable = await fileHandle.createWritable()
 	await writable.write(data)
 	await writable.close()

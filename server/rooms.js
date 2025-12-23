@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { MACHINE_ID } from "./config.js"
-import { claimRoom, releaseRoom } from "./redis.js"
+import {
+	MACHINE_ID
+} from "./config.js"
+import {
+	claimRoom,
+	releaseRoom
+} from "./redis.js"
 
 export const rooms = new Map()
 
@@ -40,7 +45,10 @@ export async function leaveRoom(roomId, peerId) {
 	room.delete(peerId)
 
 	for (const [, peer] of room) {
-		peer.send(JSON.stringify({ type: "peer-left", peerId }))
+		peer.send(JSON.stringify({
+			type: "peer-left",
+			peerId
+		}))
 	}
 
 	if (room.size === 0) {

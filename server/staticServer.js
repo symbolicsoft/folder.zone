@@ -1,9 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { readFile, realpath } from "fs/promises"
-import { join, extname, resolve } from "path"
-import { CLIENT_DIR, MIME_TYPES } from "./config.js"
+import {
+	readFile,
+	realpath
+} from "fs/promises"
+import {
+	join,
+	extname,
+	resolve
+} from "path"
+import {
+	CLIENT_DIR,
+	MIME_TYPES
+} from "./config.js"
 
 export async function serveStatic(pathname) {
 	let path = pathname === "/" ? "/index.html" : pathname
@@ -18,7 +28,9 @@ export async function serveStatic(pathname) {
 	const resolvedClient = resolve(CLIENT_DIR)
 	const resolvedFile = resolve(filePath)
 	if (!resolvedFile.startsWith(resolvedClient + "/") && resolvedFile !== resolvedClient) {
-		return new Response("Forbidden", { status: 403 })
+		return new Response("Forbidden", {
+			status: 403
+		})
 	}
 
 	const ext = extname(filePath)
@@ -27,14 +39,20 @@ export async function serveStatic(pathname) {
 		// Also check realpath to prevent symlink attacks
 		const realFilePath = await realpath(filePath)
 		if (!realFilePath.startsWith(resolvedClient + "/") && realFilePath !== resolvedClient) {
-			return new Response("Forbidden", { status: 403 })
+			return new Response("Forbidden", {
+				status: 403
+			})
 		}
 
 		const content = await readFile(filePath)
 		return new Response(content, {
-			headers: { "Content-Type": MIME_TYPES[ext] || "text/plain" },
+			headers: {
+				"Content-Type": MIME_TYPES[ext] || "text/plain"
+			},
 		})
 	} catch {
-		return new Response("Not found", { status: 404 })
+		return new Response("Not found", {
+			status: 404
+		})
 	}
 }

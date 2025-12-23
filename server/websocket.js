@@ -1,8 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { rooms, joinRoom, leaveRoom, forwardSignal, relayBinary } from "./rooms.js"
-import { generatePeerId, LIMITS } from "./config.js"
+import {
+	rooms,
+	joinRoom,
+	leaveRoom,
+	forwardSignal,
+	relayBinary
+} from "./rooms.js"
+import {
+	generatePeerId,
+	LIMITS
+} from "./config.js"
 
 const BINARY_RELAY = 1
 
@@ -49,7 +58,10 @@ class ConnectionRateLimiter {
 			return false
 		}
 
-		state.relayBytes.push({ time: now, bytes: byteCount })
+		state.relayBytes.push({
+			time: now,
+			bytes: byteCount
+		})
 		return true
 	}
 }
@@ -110,21 +122,30 @@ export const websocketHandler = {
 				case "join": {
 					// Validate room ID to prevent injection attacks
 					if (!isValidRoomId(msg.room)) {
-						ws.send(JSON.stringify({ type: "error", message: "Invalid room ID" }))
+						ws.send(JSON.stringify({
+							type: "error",
+							message: "Invalid room ID"
+						}))
 						ws.close()
 						return
 					}
 
 					// Check room limits
 					if (!rooms.has(msg.room) && rooms.size >= LIMITS.maxRooms) {
-						ws.send(JSON.stringify({ type: "error", message: "Server at capacity" }))
+						ws.send(JSON.stringify({
+							type: "error",
+							message: "Server at capacity"
+						}))
 						ws.close()
 						return
 					}
 
 					const room = rooms.get(msg.room)
 					if (room && room.size >= LIMITS.maxPeersPerRoom) {
-						ws.send(JSON.stringify({ type: "error", message: "Room is full" }))
+						ws.send(JSON.stringify({
+							type: "error",
+							message: "Room is full"
+						}))
 						ws.close()
 						return
 					}
@@ -135,7 +156,10 @@ export const websocketHandler = {
 					ws.data.peerId = peerId
 
 					// Send assigned peer ID to client
-					ws.send(JSON.stringify({ type: "peer-id", peerId }))
+					ws.send(JSON.stringify({
+						type: "peer-id",
+						peerId
+					}))
 
 					await joinRoom(msg.room, peerId, ws)
 					break
@@ -153,7 +177,10 @@ export const websocketHandler = {
 	},
 
 	async close(ws) {
-		const { room, peerId } = ws.data
+		const {
+			room,
+			peerId
+		} = ws.data
 		if (room && peerId) {
 			await leaveRoom(room, peerId)
 		}

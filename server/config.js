@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
-import { randomBytes } from "crypto"
+import {
+	dirname,
+	join
+} from "path"
+import {
+	fileURLToPath
+} from "url"
+import {
+	randomBytes
+} from "crypto"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

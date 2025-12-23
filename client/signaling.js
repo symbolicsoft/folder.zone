@@ -23,7 +23,10 @@ export class Signaling {
 
 		this.ws.onopen = () => {
 			// Request to join - server will assign peer ID
-			this.ws.send(JSON.stringify({ type: "join", room }))
+			this.ws.send(JSON.stringify({
+				type: "join",
+				room
+			}))
 		}
 
 		this.ws.onmessage = (event) => {

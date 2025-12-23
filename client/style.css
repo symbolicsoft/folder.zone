@@ -204,10 +204,12 @@ body {
 }
 
 @keyframes pulse {
+
 	0%,
 	100% {
 		opacity: 1;
 	}
+
 	50% {
 		opacity: 0.4;
 	}
@@ -768,10 +770,12 @@ body {
 }
 
 @keyframes dropzone-pulse {
+
 	0%,
 	100% {
 		border-color: var(--folder-color);
 	}
+
 	50% {
 		border-color: var(--folder-dark);
 	}
@@ -875,9 +879,11 @@ body {
 	0% {
 		background-position: 0% 50%;
 	}
+
 	50% {
 		background-position: 100% 50%;
 	}
+
 	100% {
 		background-position: 0% 50%;
 	}
@@ -1030,6 +1036,7 @@ body {
 		opacity: 0;
 		transform: translate(-50%, 20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translate(-50%, 0);
@@ -1136,6 +1143,7 @@ input:focus-visible,
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
+
 	*,
 	*::before,
 	*::after {

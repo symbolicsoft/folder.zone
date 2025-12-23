@@ -10,7 +10,11 @@ export const WEBRTC_BUFFER_THRESHOLD = 4 * 1024 * 1024 // 4MB - pause sending wh
 export const WEBRTC_BUFFER_LOW = 1024 * 1024 // 1MB - resume sending when buffer drops below this
 
 // ICE servers for WebRTC
-export const ICE_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }]
+export const ICE_SERVERS = [{
+	urls: "stun:stun.l.google.com:19302"
+}, {
+	urls: "stun:stun1.l.google.com:19302"
+}]
 
 // Binary message types for peer communication
 export const MSG_TYPE = {

@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { encrypt, decrypt } from "./crypto.js"
-import { ICE_SERVERS, WEBRTC_TIMEOUT, WEBRTC_BUFFER_THRESHOLD, WEBRTC_BUFFER_LOW, MSG_TYPE, MAX_JSON_SIZE } from "./config.js"
+import {
+	encrypt,
+	decrypt
+} from "./crypto.js"
+import {
+	ICE_SERVERS,
+	WEBRTC_TIMEOUT,
+	WEBRTC_BUFFER_THRESHOLD,
+	WEBRTC_BUFFER_LOW,
+	MSG_TYPE,
+	MAX_JSON_SIZE
+} from "./config.js"
 
 export class PeerConnection {
 	constructor(peerId, signaling, cryptoKey, isInitiator, onMessage, onStateChange) {
@@ -20,15 +30,21 @@ export class PeerConnection {
 		this.webrtcVerified = false // True after first successful WebRTC send
 		this.jsonChunkBuffers = new Map() // For reassembling chunked JSON messages
 		this.nextJsonMessageId = 0 // Counter for chunked JSON message IDs
+		this.messageQueue = [] // Queue for sequential message processing
+		this.processingMessage = false // Lock for sequential processing
 
-		this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
+		this.pc = new RTCPeerConnection({
+			iceServers: ICE_SERVERS
+		})
 
 		this.pc.onicecandidate = (e) => {
 			if (e.candidate) {
 				signaling.send({
 					type: "signal",
 					targetPeerId: peerId,
-					signal: { candidate: e.candidate },
+					signal: {
+						candidate: e.candidate
+					},
 				})
 			}
 		}
@@ -70,7 +86,10 @@ export class PeerConnection {
 
 		// Drain any queued sends via relay
 		while (this.sendQueue.length > 0) {
-			const { data, resolve } = this.sendQueue.shift()
+			const {
+				data,
+				resolve
+			} = this.sendQueue.shift()
 			this.signaling.sendBinaryRelay(this.peerId, data)
 			resolve()
 		}
@@ -104,15 +123,10 @@ export class PeerConnection {
 		this.channel.onbufferedamountlow = () => {
 			this.drainQueue()
 		}
-		this.channel.onmessage = async (e) => {
-			// Copy data immediately before any async operations
+		this.channel.onmessage = (e) => {
+			// Copy data immediately and queue for sequential processing
 			const rawData = new Uint8Array(e.data).slice()
-			try {
-				const decrypted = await decrypt(this.cryptoKey, rawData)
-				this._handleDecryptedMessage(decrypted)
-			} catch (err) {
-				console.error("Decrypt/parse error:", err)
-			}
+			this._queueMessage(rawData)
 		}
 	}
 
@@ -122,7 +136,9 @@ export class PeerConnection {
 		this.signaling.send({
 			type: "signal",
 			targetPeerId: this.peerId,
-			signal: { sdp: this.pc.localDescription },
+			signal: {
+				sdp: this.pc.localDescription
+			},
 		})
 	}
 
@@ -135,7 +151,9 @@ export class PeerConnection {
 				this.signaling.send({
 					type: "signal",
 					targetPeerId: this.peerId,
-					signal: { sdp: this.pc.localDescription },
+					signal: {
+						sdp: this.pc.localDescription
+					},
 				})
 			}
 		} else if (signal.candidate) {
@@ -144,15 +162,36 @@ export class PeerConnection {
 	}
 
 	async handleBinaryRelay(encryptedData) {
-		try {
-			const decrypted = await decrypt(this.cryptoKey, encryptedData)
-			this._handleDecryptedMessage(decrypted)
-		} catch (err) {
-			console.error("Relay decrypt/parse error:", err)
-		}
+		// Queue encrypted data for sequential processing
+		this._queueMessage(encryptedData)
 	}
 
-	_handleDecryptedMessage(decrypted) {
+	_queueMessage(encryptedData) {
+		this.messageQueue.push(encryptedData)
+		this._processQueue()
+	}
+
+	async _processQueue() {
+		if (this.processingMessage || this.messageQueue.length === 0) {
+			return
+		}
+
+		this.processingMessage = true
+
+		while (this.messageQueue.length > 0) {
+			const encryptedData = this.messageQueue.shift()
+			try {
+				const decrypted = await decrypt(this.cryptoKey, encryptedData)
+				await this._handleDecryptedMessage(decrypted)
+			} catch (err) {
+				console.error("Decrypt/parse error:", err)
+			}
+		}
+
+		this.processingMessage = false
+	}
+
+	async _handleDecryptedMessage(decrypted) {
 		const msgType = decrypted[0]
 
 		if (msgType === MSG_TYPE.FILE_CHUNK || msgType === MSG_TYPE.UPLOAD_CHUNK) {
@@ -167,7 +206,13 @@ export class PeerConnection {
 			const path = new TextDecoder().decode(decrypted.slice(11, 11 + pathLen))
 			const data = decrypted.slice(11 + pathLen)
 			const type = msgType === MSG_TYPE.FILE_CHUNK ? "file-chunk" : "upload-chunk"
-			this.onMessage({ type, path, index, total, data })
+			await this.onMessage({
+				type,
+				path,
+				index,
+				total,
+				data
+			})
 		} else if (msgType === MSG_TYPE.JSON_CHUNK) {
 			// Chunked JSON: [type(1)][messageId(4)][index(4)][total(4)][data]
 			const view = new DataView(decrypted.buffer, decrypted.byteOffset, decrypted.byteLength)
@@ -203,13 +248,13 @@ export class PeerConnection {
 					this.jsonChunkBuffers.delete(messageId)
 
 					const text = new TextDecoder().decode(fullData)
-					this.onMessage(JSON.parse(text))
+					await this.onMessage(JSON.parse(text))
 				}
 			}
 		} else {
 			// Regular JSON message
 			const text = new TextDecoder().decode(decrypted.slice(1))
-			this.onMessage(JSON.parse(text))
+			await this.onMessage(JSON.parse(text))
 		}
 	}
 
@@ -294,7 +339,10 @@ export class PeerConnection {
 			if (this.channel.bufferedAmount > WEBRTC_BUFFER_THRESHOLD) {
 				return // Wait for next bufferedamountlow event
 			}
-			const { data, resolve } = this.sendQueue.shift()
+			const {
+				data,
+				resolve
+			} = this.sendQueue.shift()
 			this.channel.send(data)
 			resolve()
 		}
@@ -341,7 +389,10 @@ export class PeerConnection {
 				// Buffer too full, queue and wait
 				console.log(`Queueing: buffer=${(this.channel.bufferedAmount / 1024 / 1024).toFixed(1)}MB`)
 				await new Promise((resolve) => {
-					this.sendQueue.push({ data: encrypted, resolve })
+					this.sendQueue.push({
+						data: encrypted,
+						resolve
+					})
 				})
 				return
 			}

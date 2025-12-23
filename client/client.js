@@ -1,13 +1,56 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { generateKey, importKey, generateRoomId, generateNonce, deriveHMACKey, computeHMAC, verifyHMAC } from "./crypto.js"
-import { Signaling } from "./signaling.js"
-import { PeerConnection } from "./peerconnection.js"
-import { listFiles, getFileHandle, readFileChunked, writeFile, formatSize, isValidPath, downloadBlob } from "./filehandling.js"
-import { isValidUploadPath, RateLimiter } from "./upload.js"
-import { CHUNK_SIZE, UPLOAD_LIMITS, DOWNLOAD_RATE_LIMIT, FILE_LIST_LIMITS } from "./config.js"
-import { showError, renderHostFiles, renderPeerFiles, updatePeerCount, updateConnectionStatus, showUploadResponse, updateBreadcrumb, updateWindowTitle, updateStatusText, createProgressItem, updateProgressItem, setProgressVerifying, setProgressVerified, removeProgressItem } from "./ui.js"
+import {
+	generateKey,
+	importKey,
+	generateRoomId,
+	generateNonce,
+	deriveHMACKey,
+	computeHMAC,
+	verifyHMAC
+} from "./crypto.js"
+import {
+	Signaling
+} from "./signaling.js"
+import {
+	PeerConnection
+} from "./peerconnection.js"
+import {
+	listFiles,
+	getFileHandle,
+	readFileChunked,
+	writeFile,
+	formatSize,
+	isValidPath,
+	downloadBlob
+} from "./filehandling.js"
+import {
+	isValidUploadPath,
+	RateLimiter
+} from "./upload.js"
+import {
+	CHUNK_SIZE,
+	UPLOAD_LIMITS,
+	DOWNLOAD_RATE_LIMIT,
+	FILE_LIST_LIMITS
+} from "./config.js"
+import {
+	showError,
+	renderHostFiles,
+	renderPeerFiles,
+	updatePeerCount,
+	updateConnectionStatus,
+	showUploadResponse,
+	updateBreadcrumb,
+	updateWindowTitle,
+	updateStatusText,
+	createProgressItem,
+	updateProgressItem,
+	setProgressVerifying,
+	setProgressVerified,
+	removeProgressItem
+} from "./ui.js"
 
 class FolderShare {
 	constructor() {
@@ -134,15 +177,26 @@ class FolderShare {
 						await this.processEntry(entry, "", files)
 					} else {
 						const file = item.getAsFile()
-						if (file) files.push({ file, path: file.name })
+						if (file)
+							files.push({
+								file,
+								path: file.name,
+							})
 					}
 				}
 			}
-
-			for (const { file, path } of files) {
-				// Prepend current path if we're in a subfolder
-				const fullPath = this.currentPath ? `${this.currentPath}/${path}` : path
+			const targetPath = this.currentPath
+			for (let i = 0; i < files.length; i++) {
+				const {
+					file,
+					path
+				} = files[i]
+				// Prepend target path if we're in a subfolder
+				const fullPath = targetPath ? `${targetPath}/${path}` : path
 				await this.uploadFile(file, fullPath)
+				if (i < files.length - 1) {
+					await new Promise((r) => setTimeout(r, 1000))
+				}
 			}
 		}
 
@@ -155,7 +209,10 @@ class FolderShare {
 		if (entry.isFile) {
 			const file = await new Promise((resolve) => entry.file(resolve))
 			const path = basePath ? `${basePath}/${entry.name}` : entry.name
-			files.push({ file, path })
+			files.push({
+				file,
+				path,
+			})
 		} else if (entry.isDirectory) {
 			const dirReader = entry.createReader()
 			const dirPath = basePath ? `${basePath}/${entry.name}` : entry.name
@@ -175,12 +232,17 @@ class FolderShare {
 	}
 
 	async uploadFiles(fileList) {
-		for (const file of fileList) {
+		const targetPath = this.currentPath
+		for (let i = 0; i < fileList.length; i++) {
+			const file = fileList[i]
 			// webkitRelativePath is set for folder uploads, preserves folder structure
 			const relativePath = file.webkitRelativePath || file.name
-			// Prepend current path if we're in a subfolder
-			const path = this.currentPath ? `${this.currentPath}/${relativePath}` : relativePath
+			// Prepend target path if we're in a subfolder
+			const path = targetPath ? `${targetPath}/${relativePath}` : relativePath
 			await this.uploadFile(file, path)
+			if (i < fileList.length - 1) {
+				await new Promise((r) => setTimeout(r, 1000))
+			}
 		}
 	}
 
@@ -404,9 +466,17 @@ class FolderShare {
 		createProgressItem(progressId, fileName, file ? file.size : 0, "download")
 
 		for (const [, pc] of this.peers) {
-			pc.send({ type: "file-request", path })
+			pc.send({
+				type: "file-request",
+				path,
+			})
 		}
-		this.pendingDownloads.set(path, { chunks: [], received: 0, total: 0, progressId })
+		this.pendingDownloads.set(path, {
+			chunks: [],
+			received: 0,
+			total: 0,
+			progressId,
+		})
 	}
 
 	async downloadFolder(folderPath) {
@@ -469,7 +539,14 @@ class FolderShare {
 			const hmac = await computeHMAC(hmacKey, fileData)
 			console.log("HMAC computed")
 
-			pc.send({ type: "file-complete", path, name: file.name, size: file.size, nonce, hmac })
+			pc.send({
+				type: "file-complete",
+				path,
+				name: file.name,
+				size: file.size,
+				nonce,
+				hmac,
+			})
 		} catch (e) {
 			console.error("Error sending file:", e)
 		}
@@ -686,7 +763,12 @@ class FolderShare {
 	sendUploadResponse(peerId, path, success, message) {
 		const pc = this.peers.get(peerId)
 		if (pc) {
-			pc.send({ type: "upload-response", path, success, message })
+			pc.send({
+				type: "upload-response",
+				path,
+				success,
+				message,
+			})
 		}
 	}
 
@@ -770,7 +852,12 @@ class FolderShare {
 		const hmac = await computeHMAC(hmacKey, fileData)
 
 		for (const [, pc] of this.peers) {
-			await pc.send({ type: "upload-complete", path, nonce, hmac })
+			await pc.send({
+				type: "upload-complete",
+				path,
+				nonce,
+				hmac,
+			})
 		}
 
 		// Show verifying state - will be updated when we get response

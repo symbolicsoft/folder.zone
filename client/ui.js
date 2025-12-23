@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { formatSize, isValidPath } from "./filehandling.js"
+import {
+	formatSize,
+	isValidPath
+} from "./filehandling.js"
 
 // SVG Icons
 const ICONS = {
@@ -82,7 +85,10 @@ export function showError(msg) {
 
 // Get items at a specific path
 export function getItemsAtPath(files, currentPath) {
-	const items = { folders: new Set(), files: [] }
+	const items = {
+		folders: new Set(),
+		files: []
+	}
 	const prefix = currentPath ? currentPath + "/" : ""
 
 	for (const file of files) {

@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import { formatSize, isValidPath } from "./filehandling.js"
-import { UPLOAD_LIMITS } from "./config.js"
+import {
+	formatSize,
+	isValidPath
+} from "./filehandling.js"
+import {
+	UPLOAD_LIMITS
+} from "./config.js"
 
 export function sanitizeFilename(name) {
 	if (!name || typeof name !== "string") return null

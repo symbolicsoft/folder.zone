@@ -21,7 +21,10 @@ export function base64ToBuffer(base64) {
 }
 
 export async function generateKey() {
-	const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+	const key = await crypto.subtle.generateKey({
+		name: "AES-GCM",
+		length: 256
+	}, true, ["encrypt", "decrypt"])
 	const exported = await crypto.subtle.exportKey("raw", key)
 	return bufferToBase64(exported)
 }
@@ -29,12 +32,18 @@ export async function generateKey() {
 export async function importKey(base64Key) {
 	const keyBuffer = base64ToBuffer(base64Key)
 	// extractable: true is needed to derive HMAC keys for integrity verification
-	return crypto.subtle.importKey("raw", keyBuffer, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
+	return crypto.subtle.importKey("raw", keyBuffer, {
+		name: "AES-GCM",
+		length: 256
+	}, true, ["encrypt", "decrypt"])
 }
 
 export async function encrypt(key, data) {
 	const iv = crypto.getRandomValues(new Uint8Array(12))
-	const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data)
+	const encrypted = await crypto.subtle.encrypt({
+		name: "AES-GCM",
+		iv
+	}, key, data)
 	const result = new Uint8Array(iv.length + encrypted.byteLength)
 	result.set(iv)
 	result.set(new Uint8Array(encrypted), iv.length)
@@ -44,7 +53,10 @@ export async function encrypt(key, data) {
 export async function decrypt(key, data) {
 	const iv = data.slice(0, 12)
 	const encrypted = data.slice(12)
-	const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted)
+	const decrypted = await crypto.subtle.decrypt({
+		name: "AES-GCM",
+		iv
+	}, key, encrypted)
 	return new Uint8Array(decrypted)
 }
 
@@ -77,9 +89,20 @@ export async function deriveHMACKey(sessionKey, nonce) {
 	combined.set(nonceBytes, sessionKeyBytes.byteLength)
 
 	// Derive HMAC key using HKDF
-	const keyMaterial = await crypto.subtle.importKey("raw", combined, { name: "HKDF" }, false, ["deriveKey"])
+	const keyMaterial = await crypto.subtle.importKey("raw", combined, {
+		name: "HKDF"
+	}, false, ["deriveKey"])
 
-	return crypto.subtle.deriveKey({ name: "HKDF", hash: "SHA-256", salt: nonceBytes, info: new TextEncoder().encode("file-hmac") }, keyMaterial, { name: "HMAC", hash: "SHA-256", length: 256 }, false, ["sign", "verify"])
+	return crypto.subtle.deriveKey({
+		name: "HKDF",
+		hash: "SHA-256",
+		salt: nonceBytes,
+		info: new TextEncoder().encode("file-hmac")
+	}, keyMaterial, {
+		name: "HMAC",
+		hash: "SHA-256",
+		length: 256
+	}, false, ["sign", "verify"])
 }
 
 // Compute HMAC-SHA256 of data
