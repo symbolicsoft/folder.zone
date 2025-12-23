@@ -69,13 +69,7 @@ export const websocketHandler = {
 
 	async message(ws, data) {
 		try {
-			// Rate limit all messages
-			if (!rateLimiter.isMessageAllowed(ws)) {
-				console.warn("Rate limit exceeded, dropping message")
-				return
-			}
-
-			// Handle binary relay messages
+			// Handle binary relay messages (separate rate limiting via bandwidth)
 			if (data instanceof Buffer || data instanceof Uint8Array) {
 				const bytes = new Uint8Array(data)
 				if (bytes.length > LIMITS.maxRelayMessageSize) {
@@ -99,7 +93,12 @@ export const websocketHandler = {
 				return
 			}
 
-			// Handle JSON messages
+			// Handle JSON messages - rate limit signaling messages
+			if (!rateLimiter.isMessageAllowed(ws)) {
+				console.warn("Rate limit exceeded, dropping message")
+				return
+			}
+
 			if (typeof data === "string" && data.length > LIMITS.maxRelayMessageSize) {
 				console.warn("Message too large, dropping")
 				return
