@@ -6,6 +6,18 @@ import {
 	isValidPath
 } from "./filehandling.js"
 
+// Detect touch device
+const isTouchDevice = () => "ontouchstart" in window || navigator.maxTouchPoints > 0
+
+// Add click handler - single tap on touch, double-click on desktop
+function addActivateHandler(element, handler) {
+	if (isTouchDevice()) {
+		element.onclick = handler
+	} else {
+		element.ondblclick = handler
+	}
+}
+
 // SVG Icons
 const ICONS = {
 	folder: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -140,7 +152,7 @@ export function renderHostFiles(files, currentPath, onNavigate) {
 			<div class="file-icon folder">${ICONS.folder}</div>
 			<span class="file-name">${escapeHtml(folderName)}</span>
 		`
-		item.ondblclick = () => onNavigate(folderPath)
+		addActivateHandler(item, () => onNavigate(folderPath))
 		grid.appendChild(item)
 		itemCount++
 	}
@@ -188,8 +200,8 @@ export function renderPeerFiles(files, allowWrite, currentPath, onNavigate, onDo
 			<div class="file-icon folder">${ICONS.folder}</div>
 			<span class="file-name">${escapeHtml(folderName)}</span>
 		`
-		item.ondblclick = () => onNavigate(folderPath)
-		item.title = "Double-click to open\nRight-click to download"
+		addActivateHandler(item, () => onNavigate(folderPath))
+		item.title = isTouchDevice() ? "Tap to open\nLong-press to download" : "Double-click to open\nRight-click to download"
 		item.oncontextmenu = (e) => {
 			e.preventDefault()
 			onDownloadFolder(folderPath)
@@ -210,8 +222,8 @@ export function renderPeerFiles(files, allowWrite, currentPath, onNavigate, onDo
 			<span class="file-name">${escapeHtml(fileName)}</span>
 			<span class="file-size">${formatSize(file.size)}</span>
 		`
-		item.title = "Double-click to download"
-		item.ondblclick = () => onDownload(file.path)
+		item.title = isTouchDevice() ? "Tap to download" : "Double-click to download"
+		addActivateHandler(item, () => onDownload(file.path))
 		grid.appendChild(item)
 		itemCount++
 	}
