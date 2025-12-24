@@ -5,15 +5,26 @@
 export const CHUNK_SIZE = 64 * 1024 // 64KB - WebRTC data channels have ~256KB message limit
 
 // WebRTC configuration
-export const WEBRTC_TIMEOUT = 10000 // 10 seconds to establish connection before relay fallback
+export const WEBRTC_TIMEOUT = 15000 // 15 seconds to establish connection before relay fallback
 export const WEBRTC_BUFFER_THRESHOLD = 4 * 1024 * 1024 // 4MB - pause sending when buffer exceeds this
 export const WEBRTC_BUFFER_LOW = 1024 * 1024 // 1MB - resume sending when buffer drops below this
 
 // ICE servers for WebRTC
+// STUN servers for direct P2P (fast, no relay), TURN servers as fallback (relayed, slower)
 export const ICE_SERVERS = [{
 	urls: "stun:stun.l.google.com:19302"
 }, {
-	urls: "stun:stun1.l.google.com:19302"
+	urls: "stun:stun.cloudflare.com:3478"
+}, {
+	// Open Relay Project - free TURN servers (also provide STUN)
+	urls: [
+		"stun:openrelay.metered.ca:80",
+		"turn:openrelay.metered.ca:80",
+		"turn:openrelay.metered.ca:443",
+		"turn:openrelay.metered.ca:443?transport=tcp"
+	],
+	username: "openrelayproject",
+	credential: "openrelayproject"
 }]
 
 // Binary message types for peer communication

@@ -34,7 +34,8 @@ export class PeerConnection {
 		this.processingMessage = false // Lock for sequential processing
 
 		this.pc = new RTCPeerConnection({
-			iceServers: ICE_SERVERS
+			iceServers: ICE_SERVERS,
+			iceCandidatePoolSize: 10 // Pre-gather candidates for faster connection
 		})
 
 		this.pc.onicecandidate = (e) => {
