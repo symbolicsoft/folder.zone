@@ -89,6 +89,11 @@ class FolderShare {
 
 		document.getElementById("select-folder").onclick = () => this.selectFolder()
 		document.getElementById("copy-link").onclick = () => this.copyLink()
+		document.getElementById("qr-link").onclick = () => this.showQRCode()
+		document.getElementById("qr-close").onclick = () => this.hideQRCode()
+		document.getElementById("qr-modal").onclick = (e) => {
+			if (e.target.id === "qr-modal") this.hideQRCode()
+		}
 		document.getElementById("allow-write").onchange = (e) => {
 			this.allowWrite = e.target.checked
 			this.broadcastFileList()
@@ -292,6 +297,31 @@ class FolderShare {
 
 		updateStatusText("status-text", "Link copied!")
 		setTimeout(() => updateStatusText("status-text", `Sharing: ${this.folderName}`), 2000)
+	}
+
+	showQRCode() {
+		const link = document.getElementById("share-link").value
+		if (!link) return
+
+		const qrContainer = document.getElementById("qr-code")
+		qrContainer.innerHTML = ""
+
+		// Generate QR code using qrcode-generator library
+		const qr = qrcode(0, "M")
+		qr.addData(link)
+		qr.make()
+
+		// Create image from QR code
+		const img = document.createElement("img")
+		img.src = qr.createDataURL(6, 0)
+		img.alt = "QR Code"
+		qrContainer.appendChild(img)
+
+		document.getElementById("qr-modal").hidden = false
+	}
+
+	hideQRCode() {
+		document.getElementById("qr-modal").hidden = true
 	}
 
 	handleSignalingMessage(msg, isHost) {

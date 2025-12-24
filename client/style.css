@@ -519,6 +519,34 @@ body {
 	font-size: 13px;
 }
 
+.btn-icon {
+	padding: 10px;
+	min-width: auto;
+}
+
+.btn-icon svg {
+	width: 20px;
+	height: 20px;
+}
+
+.qr-icon {
+	width: 20px;
+	height: 20px;
+	opacity: 0.7;
+	transition: var(--transition);
+}
+
+.btn-icon:hover .qr-icon {
+	opacity: 1;
+}
+
+/* Dark mode: invert the black icon to white */
+@media (prefers-color-scheme: dark) {
+	.qr-icon {
+		filter: invert(1);
+	}
+}
+
 .btn svg {
 	width: 18px;
 	height: 18px;
@@ -958,6 +986,74 @@ body {
 	color: var(--text-primary);
 }
 
+/* QR Code Modal */
+.qr-dialog {
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-lg);
+	padding: 24px;
+	max-width: 320px;
+	width: 90%;
+	box-shadow: var(--shadow-lg);
+	text-align: center;
+}
+
+.qr-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
+}
+
+.qr-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin: 0;
+}
+
+.qr-close {
+	background: none;
+	border: none;
+	padding: 4px;
+	cursor: pointer;
+	color: var(--text-muted);
+	border-radius: var(--radius-sm);
+	transition: var(--transition);
+}
+
+.qr-close:hover {
+	background: var(--bg-tertiary);
+	color: var(--text-primary);
+}
+
+.qr-close svg {
+	width: 20px;
+	height: 20px;
+}
+
+.qr-code {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 16px;
+	background: white;
+	border-radius: var(--radius-md);
+	margin-bottom: 16px;
+}
+
+.qr-code img,
+.qr-code canvas {
+	display: block;
+	max-width: 100%;
+}
+
+.qr-hint {
+	font-size: 13px;
+	color: var(--text-muted);
+	margin: 0;
+}
+
 /* Empty State */
 .empty-state {
 	display: flex;
@@ -1216,14 +1312,36 @@ body {
 	}
 
 	.share-row {
-		flex-direction: column;
+		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 8px;
 		margin-bottom: 12px;
+	}
+
+	.share-row .share-input {
+		flex: 1 1 100%;
+	}
+
+	.share-row .btn {
+		flex: 1;
+	}
+
+	.share-row .btn-icon {
+		flex: 0 0 auto;
 	}
 
 	.share-input {
 		padding: 10px 12px;
 		font-size: 12px;
+	}
+
+	.btn-icon {
+		padding: 8px;
+	}
+
+	.btn-icon svg {
+		width: 18px;
+		height: 18px;
 	}
 
 	.share-options {

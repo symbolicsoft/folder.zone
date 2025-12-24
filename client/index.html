@@ -118,6 +118,9 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 					</svg>
 					<span>Copy</span>
 				</button>
+				<button id="qr-link" class="btn btn-secondary btn-icon" title="Show QR Code">
+					<img src="/images/qr.png" alt="QR" class="qr-icon" />
+				</button>
 			</div>
 			<div class="share-options">
 				<label class="checkbox">
@@ -139,7 +142,7 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 		<!-- Footer -->
 		<div class="footer">
-			<span class="footer-brand">folder.zone v0.0.2</span>
+			<span class="footer-brand">folder.zone v0.0.3-pre</span>
 			<span class="footer-divider">·</span>
 			<span class="footer-text">a public service from <a href="https://symbolic.software" class="footer-link">Symbolic Software</a></span>
 			<span class="footer-divider">·</span>
@@ -210,7 +213,7 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 		<!-- Footer -->
 		<div class="footer">
-			<span class="footer-brand">folder.zone v0.0.2</span>
+			<span class="footer-brand">folder.zone v0.0.3-pre</span>
 			<span class="footer-divider">·</span>
 			<span class="footer-text">a public service from <a href="https://symbolic.software" class="footer-link">Symbolic Software</a></span>
 			<span class="footer-divider">·</span>
@@ -257,6 +260,23 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 		</div>
 	</div>
 
+	<!-- QR Code Modal -->
+	<div id="qr-modal" class="error-overlay" hidden>
+		<div class="qr-dialog">
+			<div class="qr-header">
+				<h2 class="qr-title">Scan to Connect</h2>
+				<button id="qr-close" class="qr-close" aria-label="Close">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+			<div id="qr-code" class="qr-code"></div>
+			<p class="qr-hint">Scan this QR code to open the share link</p>
+		</div>
+	</div>
+
+	<script src="/vendor/qrcode.js"></script>
 	<script src="/client.js" type="module"></script>
 </body>
 
