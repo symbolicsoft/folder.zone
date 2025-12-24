@@ -123,9 +123,7 @@ class FolderShare {
 
 	setupPeerUpload() {
 		const fileInput = document.getElementById("upload-input")
-		const folderInput = document.getElementById("upload-folder-input")
 		const uploadFilesBtn = document.getElementById("upload-files-btn")
-		const uploadFolderBtn = document.getElementById("upload-folder-btn")
 
 		if (uploadFilesBtn && fileInput) {
 			uploadFilesBtn.onclick = () => fileInput.click()
@@ -133,15 +131,6 @@ class FolderShare {
 				const files = Array.from(e.target.files)
 				this.uploadFiles(files)
 				fileInput.value = ""
-			}
-		}
-
-		if (uploadFolderBtn && folderInput) {
-			uploadFolderBtn.onclick = () => folderInput.click()
-			folderInput.onchange = (e) => {
-				const files = Array.from(e.target.files)
-				this.uploadFiles(files)
-				folderInput.value = ""
 			}
 		}
 	}
@@ -167,34 +156,16 @@ class FolderShare {
 			e.stopPropagation()
 			dropzone.classList.remove("dragover")
 
-			const items = e.dataTransfer.items
-			const files = []
+			// Only handle files, not folders
+			const droppedFiles = Array.from(e.dataTransfer.files).filter((f) => f.size > 0 || f.type !== "")
+			if (droppedFiles.length === 0) return
 
-			for (const item of items) {
-				if (item.kind === "file") {
-					const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null
-					if (entry) {
-						await this.processEntry(entry, "", files)
-					} else {
-						const file = item.getAsFile()
-						if (file)
-							files.push({
-								file,
-								path: file.name,
-							})
-					}
-				}
-			}
 			const targetPath = this.currentPath
-			for (let i = 0; i < files.length; i++) {
-				const {
-					file,
-					path
-				} = files[i]
-				// Prepend target path if we're in a subfolder
-				const fullPath = targetPath ? `${targetPath}/${path}` : path
+			for (let i = 0; i < droppedFiles.length; i++) {
+				const file = droppedFiles[i]
+				const fullPath = targetPath ? `${targetPath}/${file.name}` : file.name
 				await this.uploadFile(file, fullPath)
-				if (i < files.length - 1) {
+				if (i < droppedFiles.length - 1) {
 					await new Promise((r) => setTimeout(r, 1000))
 				}
 			}
@@ -205,40 +176,12 @@ class FolderShare {
 		dropzone.addEventListener("drop", handleDrop)
 	}
 
-	async processEntry(entry, basePath, files) {
-		if (entry.isFile) {
-			const file = await new Promise((resolve) => entry.file(resolve))
-			const path = basePath ? `${basePath}/${entry.name}` : entry.name
-			files.push({
-				file,
-				path,
-			})
-		} else if (entry.isDirectory) {
-			const dirReader = entry.createReader()
-			const dirPath = basePath ? `${basePath}/${entry.name}` : entry.name
-
-			// readEntries only returns a batch at a time, must call repeatedly until empty
-			let entries = []
-			let batch
-			do {
-				batch = await new Promise((resolve) => dirReader.readEntries(resolve))
-				entries = entries.concat(batch)
-			} while (batch.length > 0)
-
-			for (const childEntry of entries) {
-				await this.processEntry(childEntry, dirPath, files)
-			}
-		}
-	}
-
 	async uploadFiles(fileList) {
 		const targetPath = this.currentPath
 		for (let i = 0; i < fileList.length; i++) {
 			const file = fileList[i]
-			// webkitRelativePath is set for folder uploads, preserves folder structure
-			const relativePath = file.webkitRelativePath || file.name
 			// Prepend target path if we're in a subfolder
-			const path = targetPath ? `${targetPath}/${relativePath}` : relativePath
+			const path = targetPath ? `${targetPath}/${file.name}` : file.name
 			await this.uploadFile(file, path)
 			if (i < fileList.length - 1) {
 				await new Promise((r) => setTimeout(r, 1000))
@@ -247,6 +190,19 @@ class FolderShare {
 	}
 
 	async selectFolder() {
+		// Check browser compatibility when user tries to share
+		const isSupported =
+			typeof window.showDirectoryPicker === "function" &&
+			typeof window.crypto !== "undefined" &&
+			typeof window.crypto.subtle !== "undefined" &&
+			typeof window.RTCPeerConnection !== "undefined" &&
+			typeof window.WebSocket !== "undefined"
+
+		if (!isSupported) {
+			document.getElementById("unsupported-browser").hidden = false
+			return
+		}
+
 		try {
 			this.dirHandle = await window.showDirectoryPicker({
 				mode: "readwrite",

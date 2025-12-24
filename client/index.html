@@ -140,7 +140,7 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 		<!-- Footer -->
 		<div class="footer">
-			<span class="footer-brand">folder.zone v0.0.1</span>
+			<span class="footer-brand">folder.zone v0.0.2-pre</span>
 			<span class="footer-divider">·</span>
 			<span class="footer-text">a public service from <a href="https://symbolic.software" class="footer-link">Symbolic Software</a></span>
 			<span class="footer-divider">·</span>
@@ -187,14 +187,12 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 				<svg class="dropzone-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
 				</svg>
-				<p class="dropzone-text">Drop files or folders here</p>
-				<p class="dropzone-hint">or use the buttons below</p>
+				<p class="dropzone-text">Drop files here</p>
+				<p class="dropzone-hint">or use the button below</p>
 				<div class="upload-buttons">
 					<button id="upload-files-btn" class="btn btn-secondary btn-small">Upload Files</button>
-					<button id="upload-folder-btn" class="btn btn-secondary btn-small">Upload Folder</button>
 				</div>
 				<input type="file" id="upload-input" multiple hidden />
-				<input type="file" id="upload-folder-input" webkitdirectory hidden />
 			</div>
 			<div id="upload-progress-list" class="progress-list"></div>
 		</div>
@@ -213,7 +211,7 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 		<!-- Footer -->
 		<div class="footer">
-			<span class="footer-brand">folder.zone v0.0.1</span>
+			<span class="footer-brand">folder.zone v0.0.2-pre</span>
 			<span class="footer-divider">·</span>
 			<span class="footer-text">a public service from <a href="https://symbolic.software" class="footer-link">Symbolic Software</a></span>
 			<span class="footer-divider">·</span>
@@ -259,19 +257,6 @@ Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 			</div>
 		</div>
 	</div>
-
-	<!-- Browser compatibility check (runs before main app) -->
-	<script>
-		;
-		(function() {
-			var isSupported = typeof window.showDirectoryPicker === "function" && typeof window.crypto !== "undefined" && typeof window.crypto.subtle !== "undefined" && typeof window.RTCPeerConnection !== "undefined" && typeof window.WebSocket !== "undefined"
-			if (!isSupported) {
-				document.getElementById("unsupported-browser").hidden = false
-				document.getElementById("host-view").style.display = "none"
-				document.getElementById("peer-view").style.display = "none"
-			}
-		})()
-	</script>
 
 	<script src="/client.js" type="module"></script>
 </body>
