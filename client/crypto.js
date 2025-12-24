@@ -107,8 +107,8 @@ export async function deriveHMACKey(sessionKey, nonce) {
 
 // Compute HMAC-SHA256 of data
 export async function computeHMAC(hmacKey, data) {
-	const signature = await crypto.subtle.sign("HMAC", hmacKey, data)
-	return bufferToBase64(new Uint8Array(signature))
+	const hmac = await crypto.subtle.sign("HMAC", hmacKey, data)
+	return bufferToBase64(new Uint8Array(hmac))
 }
 
 // Verify HMAC-SHA256 of data

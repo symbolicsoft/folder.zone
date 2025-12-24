@@ -97,7 +97,7 @@ GCM mode provides authenticated encryption—tampering is detected via the 128-b
 
 ### File Integrity
 
-File transfers include end-to-end integrity verification. A unique HMAC key is derived per transfer via HKDF to prevent signature replay:
+File transfers include end-to-end integrity verification. A unique HMAC key is derived per transfer via HKDF to prevent replay:
 
 ```javascript
 async function deriveHMACKey(sessionKey, transferNonce) {
