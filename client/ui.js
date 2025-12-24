@@ -6,10 +6,8 @@ import {
 	isValidPath
 } from "./filehandling.js"
 
-// Detect touch device
 const isTouchDevice = () => "ontouchstart" in window || navigator.maxTouchPoints > 0
 
-// Add click handler - single tap on touch, double-click on desktop
 function addActivateHandler(element, handler) {
 	if (isTouchDevice()) {
 		element.onclick = handler
@@ -18,7 +16,6 @@ function addActivateHandler(element, handler) {
 	}
 }
 
-// SVG Icons
 const ICONS = {
 	folder: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
 		<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
@@ -44,7 +41,7 @@ const ICONS = {
 	code: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
 		<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
 	</svg>`,
-	document: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+	document: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">jpeg
 		<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
 	</svg>`,
 	home: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -55,14 +52,13 @@ const ICONS = {
 	</svg>`,
 }
 
-// File extension to icon type mapping
 const FILE_ICONS = {
-	image: ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif", "raw", "cr2", "nef", "heic", "heif", "avif", "jfif", "psd", "ai", "eps", "xcf"],
-	audio: ["mp3", "wav", "ogg", "flac", "m4a", "aac", "wma", "aiff", "ape", "opus", "mid", "midi"],
-	video: ["mp4", "avi", "mov", "mkv", "webm", "wmv", "flv", "m4v", "mpg", "mpeg", "3gp", "3g2", "ogv"],
-	archive: ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "lz", "lzma", "cab", "iso", "dmg", "tgz", "jar"],
-	code: ["js", "ts", "jsx", "tsx", "py", "rb", "java", "c", "cpp", "h", "hpp", "cs", "go", "rs", "swift", "kt", "scala", "php", "sh", "bash", "zsh", "json", "yaml", "yml", "xml", "toml", "ini", "css", "scss", "sass", "less", "html", "htm", "vue", "svelte"],
-	document: ["doc", "docx", "rtf", "odt", "pdf", "txt", "md", "markdown", "tex", "xls", "xlsx", "csv", "ppt", "pptx"],
+	image: ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico", "tiff", "tif", "raw", "cr2", "nef", "heic", "heif", "avif", "jfif", "psd", "ai", "eps", "xcf", "dng", "arw", "orf", "rw2", "pef", "sr2", "raf", "3fr", "kdc", "dcr", "mrw", "nrw", "x3f", "erf", "mef", "iiq", "crw", "webp2", "jp2", "j2k", "jpf", "jpx", "jpm", "mj2", "exr", "hdr", "dds", "tga", "pcx", "pbm", "pgm", "ppm", "pnm", "sgi", "rgb", "rgba", "bw", "int", "inta", "fits", "fit", "fts"],
+	audio: ["mp3", "wav", "ogg", "flac", "m4a", "aac", "wma", "aiff", "ape", "opus", "mid", "midi", "alac", "dsd", "dsf", "dff", "wv", "mpc", "shn", "tta", "tak", "spx", "caf", "au", "snd", "ra", "ram", "ac3", "dts", "mka", "oga", "amr", "awb", "gsm", "voc", "8svx", "paf", "fap", "wve", "vox", "iklax", "sln", "msv", "dvf", "mmf", "m4b", "m4p", "m4r", "3ga", "aa", "aax", "act", "aif", "aifc"],
+	video: ["mp4", "avi", "mov", "mkv", "webm", "wmv", "flv", "m4v", "mpg", "mpeg", "3gp", "3g2", "ogv", "ts", "mts", "m2ts", "vob", "divx", "xvid", "rm", "rmvb", "asf", "f4v", "f4p", "f4a", "f4b", "swf", "drc", "gifv", "mng", "qt", "yuv", "amv", "m2v", "svi", "mxf", "roq", "nsv", "nuv", "rec", "bik", "smk", "vpx", "hevc", "h264", "h265", "av1", "vp8", "vp9"],
+	archive: ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "lz", "lzma", "cab", "iso", "dmg", "tgz", "jar", "war", "ear", "sar", "apk", "ipa", "deb", "rpm", "pkg", "msi", "exe", "appx", "msix", "snap", "flatpak", "tbz", "tbz2", "txz", "tlz", "zipx", "sit", "sitx", "sea", "lha", "lzh", "ace", "arj", "arc", "zoo", "pea", "wim", "swm", "esd", "squashfs", "cpio", "shar", "lbr", "mar", "sbx", "a", "ar", "br", "zst", "zstd", "lz4", "sz", "z", "rz", "zpaq", "xar", "pax", "partimg", "g3", "uue", "xxe", "b64", "bh", "alz", "egg"],
+	code: ["js", "ts", "jsx", "tsx", "py", "rb", "java", "c", "cpp", "h", "hpp", "cs", "go", "rs", "swift", "kt", "scala", "php", "sh", "bash", "zsh", "json", "yaml", "yml", "xml", "toml", "ini", "css", "scss", "sass", "less", "html", "htm", "vue", "svelte", "astro", "mjs", "cjs", "mts", "cts", "coffee", "clj", "cljs", "cljc", "edn", "elm", "erl", "hrl", "ex", "exs", "fs", "fsx", "fsi", "ml", "mli", "nim", "nimble", "pl", "pm", "raku", "r", "jl", "lua", "tcl", "v", "vhdl", "vhd", "sv", "svh", "asm", "s", "d", "di", "ada", "adb", "ads", "pas", "pp", "lpr", "dpr", "cob", "cbl", "f", "f90", "f95", "f03", "for", "lisp", "lsp", "cl", "scm", "ss", "rkt", "hs", "lhs", "purs", "idr", "agda", "lean", "v", "coq", "thy", "pro", "p", "m", "mm", "sol", "vy", "move", "cairo", "wat", "wast", "sql", "psql", "plsql", "graphql", "gql", "proto", "thrift", "avsc", "capnp", "fbs", "jsonc", "json5", "jsonl", "ndjson", "hjson", "cson", "yaml", "raml", "dockerfile", "containerfile", "vagrantfile", "makefile", "gnumakefile", "cmake", "rake", "gemfile", "podfile", "cartfile", "fastfile", "gradle", "sbt", "pom", "build", "bzl", "bazel", "buck", "pants", "nx", "tf", "tfvars", "hcl", "nix", "dhall", "kdl", "pkl", "starlark", "smithy", "prisma", "rego", "cue", "jsonnet", "libsonnet"],
+	document: ["doc", "docx", "rtf", "odt", "pdf", "txt", "md", "markdown", "tex", "xls", "xlsx", "csv", "ppt", "pptx", "odp", "ods", "odg", "odf", "pages", "numbers", "key", "epub", "mobi", "azw", "azw3", "fb2", "djvu", "djv", "cbr", "cbz", "cb7", "cbt", "cba", "chm", "xps", "oxps", "ps", "wpd", "wps", "wks", "wpg", "pub", "vsd", "vsdx", "mpp", "mppx", "one", "accdb", "mdb", "dbf", "tsv", "sxw", "sxc", "sxi", "sxd", "stw", "stc", "sti", "std", "vor", "dot", "dotx", "xlt", "xltx", "pot", "potx", "abw", "zabw", "latex", "bib", "cls", "sty", "dtx", "ins", "ltx", "texi", "texinfo", "info", "org", "rst", "asciidoc", "adoc", "textile", "wiki", "mediawiki", "creole", "pod", "man", "roff", "groff", "me", "ms", "mom", "mdx", "ipynb", "rmd", "qmd", "typ"],
 }
 
 const EXTENSION_TO_TYPE = new Map()
@@ -95,14 +91,12 @@ export function showError(msg) {
 	}
 }
 
-// Get items at a specific path
 export function getItemsAtPath(files, currentPath) {
 	const items = {
 		folders: new Set(),
 		files: []
 	}
 	const prefix = currentPath ? currentPath + "/" : ""
-
 	for (const file of files) {
 		if (currentPath && !file.path.startsWith(prefix)) continue
 		if (!currentPath && file.path.includes("/")) {
@@ -120,30 +114,22 @@ export function getItemsAtPath(files, currentPath) {
 			items.files.push(file)
 		}
 	}
-
 	return {
 		folders: Array.from(items.folders).sort((a, b) => a.localeCompare(b)),
 		files: items.files.sort((a, b) => a.path.localeCompare(b.path)),
 	}
 }
 
-// Render host files
 export function renderHostFiles(files, currentPath, onNavigate) {
 	const grid = document.getElementById("file-grid")
 	const welcomeScreen = document.getElementById("welcome-screen")
 	const statusItems = document.getElementById("status-items")
-
 	if (welcomeScreen) welcomeScreen.hidden = true
 	if (grid) grid.hidden = false
-
 	if (!grid) return
-
 	grid.innerHTML = ""
-
 	const items = getItemsAtPath(files, currentPath)
 	let itemCount = 0
-
-	// Render folders
 	for (const folderName of items.folders) {
 		const folderPath = currentPath ? `${currentPath}/${folderName}` : folderName
 		const item = document.createElement("div")
@@ -156,8 +142,6 @@ export function renderHostFiles(files, currentPath, onNavigate) {
 		grid.appendChild(item)
 		itemCount++
 	}
-
-	// Render files
 	for (const file of items.files) {
 		const fileName = file.path.split("/").pop()
 		const iconType = getFileIconType(fileName)
@@ -172,26 +156,19 @@ export function renderHostFiles(files, currentPath, onNavigate) {
 		grid.appendChild(item)
 		itemCount++
 	}
-
 	if (statusItems) {
 		statusItems.textContent = `${itemCount} item${itemCount !== 1 ? "s" : ""}`
 	}
 }
 
-// Render peer files
 export function renderPeerFiles(files, allowWrite, currentPath, onNavigate, onDownload, onDownloadFolder) {
 	const grid = document.getElementById("peer-file-grid")
 	const statusItems = document.getElementById("peer-status-items")
 	const uploadSection = document.getElementById("upload-section")
-
 	if (!grid) return
-
 	grid.innerHTML = ""
-
 	const items = getItemsAtPath(files, currentPath)
 	let itemCount = 0
-
-	// Render folders
 	for (const folderName of items.folders) {
 		const folderPath = currentPath ? `${currentPath}/${folderName}` : folderName
 		const item = document.createElement("div")
@@ -210,7 +187,6 @@ export function renderPeerFiles(files, allowWrite, currentPath, onNavigate, onDo
 		itemCount++
 	}
 
-	// Render files
 	for (const file of items.files) {
 		if (!isValidPath(file.path)) continue
 		const fileName = file.path.split("/").pop()
@@ -227,42 +203,32 @@ export function renderPeerFiles(files, allowWrite, currentPath, onNavigate, onDo
 		grid.appendChild(item)
 		itemCount++
 	}
-
 	if (statusItems) {
 		statusItems.textContent = `${itemCount} item${itemCount !== 1 ? "s" : ""}`
 	}
-
 	if (uploadSection) {
 		uploadSection.hidden = !allowWrite
 	}
 }
 
-// Update breadcrumb
 export function updateBreadcrumb(elementId, folderName, currentPath, onNavigate) {
 	const breadcrumb = document.getElementById(elementId)
 	if (!breadcrumb) return
-
 	breadcrumb.innerHTML = ""
-
-	// Root item
 	const rootItem = document.createElement("span")
 	rootItem.className = "breadcrumb-item"
 	rootItem.innerHTML = `${ICONS.home} ${escapeHtml(folderName || "Home")}`
 	rootItem.onclick = () => onNavigate("")
 	breadcrumb.appendChild(rootItem)
-
-	// Path segments
 	if (currentPath) {
 		const parts = currentPath.split("/")
 		let pathSoFar = ""
 		for (const part of parts) {
 			pathSoFar = pathSoFar ? `${pathSoFar}/${part}` : part
-
 			const separator = document.createElement("span")
 			separator.className = "breadcrumb-separator"
 			separator.textContent = "/"
 			breadcrumb.appendChild(separator)
-
 			const pathItem = document.createElement("span")
 			pathItem.className = "breadcrumb-item"
 			pathItem.innerHTML = `${ICONS.folderOpen} ${escapeHtml(part)}`
@@ -277,7 +243,6 @@ export function updatePeerCount(count) {
 	const el = document.getElementById("peer-count")
 	const el2 = document.getElementById("peer-count-label")
 	const status = document.getElementById("host-peer-status")
-
 	if (el) el.textContent = `${count} connected`
 	if (el2) el2.textContent = `${count} connected`
 	if (status) status.hidden = count === 0
@@ -288,24 +253,27 @@ export function updateConnectionStatus(status, isRelay) {
 	const statusDot = document.getElementById("status-dot")
 	const statusText = document.getElementById("peer-status-text")
 	const connectionMode = document.getElementById("connection-mode")
-
+	const isDisconnected = status === "disconnected"
 	if (statusEl) {
-		statusEl.textContent = "Connected"
+		statusEl.textContent = isDisconnected ? "Disconnected" : "Connected"
 	}
-
 	if (statusDot) {
-		statusDot.className = "status-dot connected"
+		statusDot.className = isDisconnected ? "status-dot disconnected" : "status-dot connected"
 	}
-
 	if (statusText) {
-		statusText.textContent = isRelay ? "Connected via relay" : "Connected directly"
+		statusText.textContent = isDisconnected ?
+			"Host disconnected" :
+			isRelay ? "Connected via relay" : "Connected directly"
 	}
-
 	if (connectionMode) {
-		connectionMode.hidden = false
-		connectionMode.className = isRelay ? "connection-mode relay" : "connection-mode p2p"
-		connectionMode.textContent = isRelay ? "Relay" : "P2P"
-		connectionMode.title = isRelay ? "Using encrypted relay (slower)" : "Direct peer-to-peer connection (fastest)"
+		if (isDisconnected) {
+			connectionMode.hidden = true
+		} else {
+			connectionMode.hidden = false
+			connectionMode.className = isRelay ? "connection-mode relay" : "connection-mode p2p"
+			connectionMode.textContent = isRelay ? "Relay" : "P2P"
+			connectionMode.title = isRelay ? "Using encrypted relay (slower)" : "Direct peer-to-peer connection (fastest)"
+		}
 	}
 }
 
@@ -319,15 +287,11 @@ export function showUploadResponse(success, message) {
 	}
 }
 
-// Progress management
 export function createProgressItem(id, name, size, type = "download") {
 	const container = document.getElementById(type === "download" ? "download-progress-list" : "upload-progress-list")
 	const section = document.getElementById(type === "download" ? "download-section" : null)
-
 	if (!container) return
-
 	if (section) section.hidden = false
-
 	const item = document.createElement("div")
 	item.className = "progress-item"
 	item.id = `progress-${type}-${id}`
@@ -348,12 +312,10 @@ export function createProgressItem(id, name, size, type = "download") {
 export function updateProgressItem(id, progress, type = "download") {
 	const item = document.getElementById(`progress-${type}-${id}`)
 	if (!item) return
-
 	const bar = item.querySelector(".progress-fill")
 	if (bar) {
 		bar.style.width = `${Math.min(100, progress)}%`
 	}
-
 	const percent = item.querySelector(".progress-percent")
 	if (percent) {
 		percent.textContent = `${Math.round(progress)}%`
@@ -363,14 +325,11 @@ export function updateProgressItem(id, progress, type = "download") {
 export function setProgressVerifying(id, type = "download") {
 	const item = document.getElementById(`progress-${type}-${id}`)
 	if (!item) return
-
 	item.classList.add("verifying")
-
 	const bar = item.querySelector(".progress-fill")
 	if (bar) {
 		bar.style.width = "100%"
 	}
-
 	const percent = item.querySelector(".progress-percent")
 	if (percent) {
 		percent.textContent = "VERIFYING INTEGRITY..."
@@ -380,10 +339,8 @@ export function setProgressVerifying(id, type = "download") {
 export function setProgressVerified(id, success, type = "download") {
 	const item = document.getElementById(`progress-${type}-${id}`)
 	if (!item) return
-
 	item.classList.remove("verifying")
 	item.classList.add(success ? "verified" : "failed")
-
 	const percent = item.querySelector(".progress-percent")
 	if (percent) {
 		percent.textContent = success ? "VERIFIED" : "INTEGRITY CHECK FAILED"
@@ -395,16 +352,11 @@ export function removeProgressItem(id, type = "download") {
 	if (item) {
 		item.remove()
 	}
-
 	const container = document.getElementById(type === "download" ? "download-progress-list" : "upload-progress-list")
 	const section = document.getElementById(type === "download" ? "download-section" : null)
 	if (container && container.children.length === 0 && section) {
 		section.hidden = true
 	}
-}
-
-export function updateWindowTitle(elementId, title) {
-	// Not used in modern design
 }
 
 export function updateStatusText(elementId, text) {

@@ -2,43 +2,50 @@
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 const BINARY_RELAY = 1
-const WS_BUFFER_THRESHOLD = 4 * 1024 * 1024 // 4MB - same as WebRTC
-const WS_BUFFER_CHECK_INTERVAL = 50 // ms
+const WS_BUFFER_THRESHOLD = 4 * 1024 * 1024
+const WS_BUFFER_CHECK_INTERVAL = 50
+const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 16000, 30000]
 
 export class Signaling {
-	constructor(onMessage, onError, onBinaryRelay) {
+	constructor(onMessage, onError, onBinaryRelay, onReconnect) {
 		this.onMessage = onMessage
 		this.onError = onError || (() => {})
 		this.onBinaryRelay = onBinaryRelay || (() => {})
+		this.onReconnect = onReconnect || (() => {})
 		this.ws = null
-		this.peerId = null // Assigned by server
+		this.peerId = null
 		this.room = null
+		this.reconnectAttempt = 0
+		this.reconnectTimer = null
+		this.intentionallyClosed = false
 	}
 
 	connect(room) {
 		this.room = room
+		this.intentionallyClosed = false
+		this._connect()
+	}
+
+	_connect() {
 		const protocol = location.protocol === "https:" ? "wss:" : "ws:"
-		this.ws = new WebSocket(`${protocol}//${location.host}?room=${room}`)
+		this.ws = new WebSocket(`${protocol}//${location.host}?room=${encodeURIComponent(this.room)}`)
 		this.ws.binaryType = "arraybuffer"
 
 		this.ws.onopen = () => {
-			// Request to join - server will assign peer ID
+			this.reconnectAttempt = 0
 			this.ws.send(JSON.stringify({
 				type: "join",
-				room
+				room: this.room
 			}))
 		}
 
 		this.ws.onmessage = (event) => {
-			// Handle binary relay messages
 			if (event.data instanceof ArrayBuffer) {
 				const bytes = new Uint8Array(event.data)
-				console.log(`Received binary message: ${bytes.length} bytes, type=${bytes[0]}`)
 				if (bytes[0] === BINARY_RELAY) {
 					const peerIdLen = (bytes[1] << 8) | bytes[2]
 					const fromPeerId = new TextDecoder().decode(bytes.slice(3, 3 + peerIdLen))
 					const data = bytes.slice(3 + peerIdLen)
-					console.log(`Relay message from ${fromPeerId}: ${data.length} bytes`)
 					this.onBinaryRelay(fromPeerId, data)
 				}
 				return
@@ -46,13 +53,15 @@ export class Signaling {
 
 			const msg = JSON.parse(event.data)
 
-			// Handle server-assigned peer ID
 			if (msg.type === "peer-id") {
+				const isReconnect = this.peerId !== null && this.peerId !== msg.peerId
 				this.peerId = msg.peerId
+				if (isReconnect) {
+					this.onReconnect()
+				}
 				return
 			}
 
-			// Handle server errors
 			if (msg.type === "error") {
 				this.onError(msg.message)
 				return
@@ -62,8 +71,25 @@ export class Signaling {
 		}
 
 		this.ws.onclose = () => {
-			console.log("Signaling connection closed")
+			if (this.intentionallyClosed) return
+			this._scheduleReconnect()
 		}
+
+		this.ws.onerror = () => {}
+	}
+
+	_scheduleReconnect() {
+		if (this.reconnectTimer) return
+
+		const delay = RECONNECT_DELAYS[Math.min(this.reconnectAttempt, RECONNECT_DELAYS.length - 1)]
+		this.reconnectAttempt++
+
+		this.reconnectTimer = setTimeout(() => {
+			this.reconnectTimer = null
+			if (!this.intentionallyClosed) {
+				this._connect()
+			}
+		}, delay)
 	}
 
 	send(msg) {
@@ -72,14 +98,11 @@ export class Signaling {
 		}
 	}
 
-	// Send binary relay message: [type(1)][peerIdLen(2)][peerId][data]
-	// Returns a promise that resolves when buffer has space (flow control)
 	async sendBinaryRelay(targetPeerId, data) {
 		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
 			return
 		}
 
-		// Wait for buffer to drain if it's too full (backpressure)
 		while (this.ws.bufferedAmount > WS_BUFFER_THRESHOLD) {
 			await new Promise((r) => setTimeout(r, WS_BUFFER_CHECK_INTERVAL))
 			if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -95,5 +118,17 @@ export class Signaling {
 		msg.set(peerIdBytes, 3)
 		msg.set(data, 3 + peerIdBytes.length)
 		this.ws.send(msg)
+	}
+
+	close() {
+		this.intentionallyClosed = true
+		if (this.reconnectTimer) {
+			clearTimeout(this.reconnectTimer)
+			this.reconnectTimer = null
+		}
+		if (this.ws) {
+			this.ws.close()
+			this.ws = null
+		}
 	}
 }

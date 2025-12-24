@@ -12,7 +12,9 @@ export function bufferToBase64(buffer) {
 
 export function base64ToBuffer(base64) {
 	const padded = base64.replace(/-/g, "+").replace(/_/g, "/")
-	const binary = atob(padded)
+	const paddingNeeded = (4 - (padded.length % 4)) % 4
+	const fullyPadded = padded + "=".repeat(paddingNeeded)
+	const binary = atob(fullyPadded)
 	const bytes = new Uint8Array(binary.length)
 	for (let i = 0; i < binary.length; i++) {
 		bytes[i] = binary.charCodeAt(i)
@@ -31,7 +33,9 @@ export async function generateKey() {
 
 export async function importKey(base64Key) {
 	const keyBuffer = base64ToBuffer(base64Key)
-	// extractable: true is needed to derive HMAC keys for integrity verification
+	if (keyBuffer.length !== 32) {
+		throw new Error("Invalid key length: expected 32 bytes for AES-256")
+	}
 	return crypto.subtle.importKey("raw", keyBuffer, {
 		name: "AES-GCM",
 		length: 256
@@ -51,6 +55,9 @@ export async function encrypt(key, data) {
 }
 
 export async function decrypt(key, data) {
+	if (data.length < 28) {
+		throw new Error("Invalid ciphertext: data too short")
+	}
 	const iv = data.slice(0, 12)
 	const encrypted = data.slice(12)
 	const decrypted = await crypto.subtle.decrypt({
@@ -66,30 +73,19 @@ export function generateRoomId() {
 }
 
 export function generatePeerId() {
-	const bytes = crypto.getRandomValues(new Uint8Array(16)) // 128 bits for better entropy
+	const bytes = crypto.getRandomValues(new Uint8Array(16))
 	return bufferToBase64(bytes)
 }
 
-// Generate a random nonce for HMAC key derivation
 export function generateNonce() {
 	const bytes = crypto.getRandomValues(new Uint8Array(16))
 	return bufferToBase64(bytes)
 }
 
-// Derive an HMAC key from the session key and a nonce
-// This ensures each file transfer uses a unique key, even for the same file
 export async function deriveHMACKey(sessionKey, nonce) {
-	// Export the session key to raw bytes
 	const sessionKeyBytes = await crypto.subtle.exportKey("raw", sessionKey)
-
-	// Combine session key bytes with nonce to create unique key material
 	const nonceBytes = base64ToBuffer(nonce)
-	const combined = new Uint8Array(sessionKeyBytes.byteLength + nonceBytes.length)
-	combined.set(new Uint8Array(sessionKeyBytes), 0)
-	combined.set(nonceBytes, sessionKeyBytes.byteLength)
-
-	// Derive HMAC key using HKDF
-	const keyMaterial = await crypto.subtle.importKey("raw", combined, {
+	const keyMaterial = await crypto.subtle.importKey("raw", sessionKeyBytes, {
 		name: "HKDF"
 	}, false, ["deriveKey"])
 
@@ -105,14 +101,15 @@ export async function deriveHMACKey(sessionKey, nonce) {
 	}, false, ["sign", "verify"])
 }
 
-// Compute HMAC-SHA256 of data
 export async function computeHMAC(hmacKey, data) {
 	const hmac = await crypto.subtle.sign("HMAC", hmacKey, data)
 	return bufferToBase64(new Uint8Array(hmac))
 }
 
-// Verify HMAC-SHA256 of data
 export async function verifyHMAC(hmacKey, data, expectedHMAC) {
 	const expectedBytes = base64ToBuffer(expectedHMAC)
+	if (expectedBytes.length !== 32) {
+		return false
+	}
 	return crypto.subtle.verify("HMAC", hmacKey, expectedBytes, data)
 }

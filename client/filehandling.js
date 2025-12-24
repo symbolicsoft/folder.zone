@@ -1,25 +1,42 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-import {
-	CHUNK_SIZE
-} from "./config.js"
-
 export async function listFiles(dirHandle, path = "") {
 	const files = []
+	const entries = []
 	for await (const [name, handle] of dirHandle) {
+		entries.push({
+			name,
+			handle
+		})
+	}
+	for (const {
+			name,
+			handle
+		}
+		of entries) {
 		const fullPath = path ? `${path}/${name}` : name
 		if (handle.kind === "file") {
-			const file = await handle.getFile()
-			files.push({
-				path: fullPath,
-				size: file.size,
-				modified: file.lastModified,
-			})
+			try {
+				const file = await handle.getFile()
+				files.push({
+					path: fullPath,
+					size: file.size,
+					modified: file.lastModified,
+				})
+			} catch (e) {
+				console.warn(`Failed to get file info for ${fullPath}:`, e)
+			}
 		} else {
-			files.push(...(await listFiles(handle, fullPath)))
+			try {
+				const subFiles = await listFiles(handle, fullPath)
+				files.push(...subFiles)
+			} catch (e) {
+				console.warn(`Failed to list directory ${fullPath}:`, e)
+			}
 		}
 	}
+
 	return files
 }
 
@@ -30,22 +47,6 @@ export async function getFileHandle(dirHandle, path) {
 		current = await current.getDirectoryHandle(parts[i])
 	}
 	return current.getFileHandle(parts[parts.length - 1])
-}
-
-export async function readFileChunked(fileHandle, chunkSize = CHUNK_SIZE) {
-	const file = await fileHandle.getFile()
-	const chunks = []
-	let offset = 0
-	while (offset < file.size) {
-		const slice = file.slice(offset, offset + chunkSize)
-		chunks.push(await slice.arrayBuffer())
-		offset += chunkSize
-	}
-	return {
-		chunks,
-		size: file.size,
-		name: file.name
-	}
 }
 
 export async function writeFile(dirHandle, path, data) {
@@ -87,5 +88,5 @@ export function downloadBlob(blob, filename) {
 	a.href = url
 	a.download = filename
 	a.click()
-	URL.revokeObjectURL(url)
+	setTimeout(() => URL.revokeObjectURL(url), 60000)
 }

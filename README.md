@@ -185,7 +185,7 @@ Binary messages use a compact header for efficient WebRTC transport:
 ### Development
 
 ```bash
-git clone https://github.com/nickolasburr/folder.zone
+git clone https://github.com/symbolicsoft/folder.zone
 cd folder.zone
 bun run server/server.js
 ```

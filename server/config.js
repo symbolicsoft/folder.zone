@@ -8,9 +8,6 @@ import {
 import {
 	fileURLToPath
 } from "url"
-import {
-	randomBytes
-} from "crypto"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -29,19 +26,14 @@ export const MIME_TYPES = {
 	".ico": "image/x-icon",
 }
 
-// Security limits
+export const BINARY_RELAY = 1
+
 export const LIMITS = {
 	maxRooms: 10000,
 	maxPeersPerRoom: 50,
-	maxRelayMessageSize: 2 * 1024 * 1024, // 2MB max relay message
+	maxRelayMessageSize: 2 * 1024 * 1024,
 	roomIdMaxLength: 32,
 	roomIdPattern: /^[a-zA-Z0-9_-]+$/,
-	// Rate limiting
-	messagesPerMinute: 300, // Max messages per connection per minute
-	relayBytesPerMinute: 100 * 1024 * 1024, // 100MB relay bandwidth per connection per minute
-}
-
-// Generate cryptographically secure peer ID (128 bits)
-export function generatePeerId() {
-	return randomBytes(16).toString("base64url")
+	messagesPerMinute: 300,
+	relayBytesPerMinute: 100 * 1024 * 1024,
 }

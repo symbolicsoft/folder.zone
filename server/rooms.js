@@ -2,7 +2,8 @@
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 import {
-	MACHINE_ID
+	MACHINE_ID,
+	BINARY_RELAY
 } from "./config.js"
 import {
 	claimRoom,
@@ -16,9 +17,7 @@ export async function joinRoom(roomId, peerId, ws) {
 		rooms.set(roomId, new Map())
 		await claimRoom(roomId)
 	}
-
 	const room = rooms.get(roomId)
-
 	for (const [existingPeerId, peer] of room) {
 		peer.send(
 			JSON.stringify({
@@ -33,24 +32,20 @@ export async function joinRoom(roomId, peerId, ws) {
 			}),
 		)
 	}
-
 	room.set(peerId, ws)
 	console.log(`[${MACHINE_ID}] Peer ${peerId} joined room ${roomId} (${room.size} peers)`)
 }
 
 export async function leaveRoom(roomId, peerId) {
 	if (!rooms.has(roomId)) return
-
 	const room = rooms.get(roomId)
 	room.delete(peerId)
-
 	for (const [, peer] of room) {
 		peer.send(JSON.stringify({
 			type: "peer-left",
 			peerId
 		}))
 	}
-
 	if (room.size === 0) {
 		rooms.delete(roomId)
 		await releaseRoom(roomId)
@@ -72,13 +67,12 @@ export function forwardSignal(roomId, fromPeerId, targetPeerId, signal) {
 	}
 }
 
-const BINARY_RELAY = 1
+const textEncoder = new TextEncoder()
 
 export function relayBinary(roomId, fromPeerId, targetPeerId, data) {
 	const room = rooms.get(roomId)
 	if (room && room.has(targetPeerId)) {
-		// Build binary message: [type(1)][peerIdLen(2)][peerId][data]
-		const peerIdBytes = new TextEncoder().encode(fromPeerId)
+		const peerIdBytes = textEncoder.encode(fromPeerId)
 		const msg = new Uint8Array(3 + peerIdBytes.length + data.length)
 		msg[0] = BINARY_RELAY
 		msg[1] = (peerIdBytes.length >> 8) & 0xff

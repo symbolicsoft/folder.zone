@@ -19,7 +19,6 @@ import {
 import {
 	listFiles,
 	getFileHandle,
-	readFileChunked,
 	writeFile,
 	formatSize,
 	isValidPath,
@@ -43,7 +42,6 @@ import {
 	updateConnectionStatus,
 	showUploadResponse,
 	updateBreadcrumb,
-	updateWindowTitle,
 	updateStatusText,
 	createProgressItem,
 	updateProgressItem,
@@ -63,13 +61,11 @@ class FolderShare {
 		this.files = []
 		this.allowWrite = false
 		this.pendingDownloads = new Map()
-		this.currentPath = "" // Current folder path for navigation
-		this.folderName = "" // Root folder name
-
+		this.currentPath = ""
+		this.folderName = ""
 		this.uploadRateLimiter = new RateLimiter(UPLOAD_LIMITS.rateLimitPerMinute)
 		this.downloadRateLimiter = new RateLimiter(DOWNLOAD_RATE_LIMIT)
 		this.pendingUploads = new Map()
-
 		this.init()
 	}
 
@@ -86,7 +82,6 @@ class FolderShare {
 		this.isHost = true
 		document.getElementById("host-view").hidden = false
 		document.getElementById("peer-view").hidden = true
-
 		document.getElementById("select-folder").onclick = () => this.selectFolder()
 		document.getElementById("copy-link").onclick = () => this.copyLink()
 		document.getElementById("qr-link").onclick = () => this.showQRCode()
@@ -104,20 +99,16 @@ class FolderShare {
 		this.isHost = false
 		document.getElementById("host-view").hidden = true
 		document.getElementById("peer-view").hidden = false
-
 		const [roomId, keyBase64] = hash.split(":")
 		this.roomId = roomId
-
 		try {
 			this.cryptoKey = await importKey(keyBase64)
 		} catch (e) {
 			showError("Invalid share link")
 			return
 		}
-
 		this.setupPeerUpload()
 		this.setupPeerDragDrop()
-
 		this.signaling = new Signaling(
 			(msg) => this.handleSignalingMessage(msg, false),
 			(error) => showError(error),
@@ -129,7 +120,6 @@ class FolderShare {
 	setupPeerUpload() {
 		const fileInput = document.getElementById("upload-input")
 		const uploadFilesBtn = document.getElementById("upload-files-btn")
-
 		if (uploadFilesBtn && fileInput) {
 			uploadFilesBtn.onclick = () => fileInput.click()
 			fileInput.onchange = (e) => {
@@ -143,28 +133,22 @@ class FolderShare {
 	setupPeerDragDrop() {
 		const dropzone = document.getElementById("upload-dropzone")
 		if (!dropzone) return
-
 		const handleDragOver = (e) => {
 			e.preventDefault()
 			e.stopPropagation()
 			dropzone.classList.add("dragover")
 		}
-
 		const handleDragLeave = (e) => {
 			e.preventDefault()
 			e.stopPropagation()
 			dropzone.classList.remove("dragover")
 		}
-
 		const handleDrop = async (e) => {
 			e.preventDefault()
 			e.stopPropagation()
 			dropzone.classList.remove("dragover")
-
-			// Only handle files, not folders
 			const droppedFiles = Array.from(e.dataTransfer.files).filter((f) => f.size > 0 || f.type !== "")
 			if (droppedFiles.length === 0) return
-
 			const targetPath = this.currentPath
 			for (let i = 0; i < droppedFiles.length; i++) {
 				const file = droppedFiles[i]
@@ -175,7 +159,6 @@ class FolderShare {
 				}
 			}
 		}
-
 		dropzone.addEventListener("dragover", handleDragOver)
 		dropzone.addEventListener("dragleave", handleDragLeave)
 		dropzone.addEventListener("drop", handleDrop)
@@ -185,7 +168,6 @@ class FolderShare {
 		const targetPath = this.currentPath
 		for (let i = 0; i < fileList.length; i++) {
 			const file = fileList[i]
-			// Prepend target path if we're in a subfolder
 			const path = targetPath ? `${targetPath}/${file.name}` : file.name
 			await this.uploadFile(file, path)
 			if (i < fileList.length - 1) {
@@ -195,7 +177,6 @@ class FolderShare {
 	}
 
 	async selectFolder() {
-		// Check browser compatibility when user tries to share
 		const isSupported =
 			typeof window.showDirectoryPicker === "function" &&
 			typeof window.crypto !== "undefined" &&
@@ -217,26 +198,19 @@ class FolderShare {
 			showError('Your browser may not allow access to top-level folders like "Documents" or "Desktop". Instead, please choose a subfolder.')
 			return
 		}
-
 		this.folderName = this.dirHandle.name
 		this.roomId = generateRoomId()
 		const keyBase64 = await generateKey()
 		this.cryptoKey = await importKey(keyBase64)
-
 		const shareLink = `${location.origin}/#${this.roomId}:${keyBase64}`
 		document.getElementById("share-link").value = shareLink
 		document.getElementById("share-panel").hidden = false
-
-		// Update window title
-		updateWindowTitle("window-title", this.folderName)
-
 		this.signaling = new Signaling(
 			(msg) => this.handleSignalingMessage(msg, true),
 			(error) => showError(error),
 			(fromPeerId, data) => this.handleBinaryRelay(fromPeerId, data),
 		)
 		this.signaling.connect(this.roomId)
-
 		await this.updateFileList()
 		this.watchFolder()
 	}
@@ -261,8 +235,6 @@ class FolderShare {
 
 	async updateFileList() {
 		this.files = await listFiles(this.dirHandle)
-
-		// Warn if folder has too many files (only once)
 		if (this.files.length > FILE_LIST_LIMITS.maxFiles && !this.fileLimitWarningShown) {
 			this.fileLimitWarningShown = true
 			showError(`This folder contains ${this.files.length} files, which exceeds the limit of ${FILE_LIST_LIMITS.maxFiles}. Peers may not be able to view the full file list.`)
@@ -275,7 +247,7 @@ class FolderShare {
 	}
 
 	watchFolder() {
-		setInterval(() => this.updateFileList(), 2000)
+		setInterval(() => this.updateFileList(), 5000)
 	}
 
 	copyLink() {
@@ -284,7 +256,6 @@ class FolderShare {
 		input.select()
 		navigator.clipboard.writeText(input.value)
 
-		// Visual feedback on button
 		if (btn) {
 			btn.classList.add("copied")
 			const span = btn.querySelector("span")
@@ -306,12 +277,10 @@ class FolderShare {
 		const qrContainer = document.getElementById("qr-code")
 		qrContainer.innerHTML = ""
 
-		// Generate QR code using qrcode-generator library
 		const qr = qrcode(0, "M")
 		qr.addData(link)
 		qr.make()
 
-		// Create image from QR code
 		const img = document.createElement("img")
 		img.src = qr.createDataURL(6, 0)
 		img.alt = "QR Code"
@@ -346,6 +315,9 @@ class FolderShare {
 					this.peers.delete(msg.peerId)
 				}
 				updatePeerCount(this.peers.size)
+				if (!this.isHost && this.peers.size === 0) {
+					updateConnectionStatus("disconnected")
+				}
 				break
 			}
 			case "signal": {
@@ -366,7 +338,6 @@ class FolderShare {
 	}
 
 	handleConnectionState(peerId, state) {
-		console.log(`Peer ${peerId}: ${state}`)
 		const isConnected = state === "connected" || state === "connected (relay)"
 
 		if (!this.isHost && isConnected) {
@@ -380,7 +351,6 @@ class FolderShare {
 	async handlePeerMessage(peerId, msg) {
 		switch (msg.type) {
 			case "file-list":
-				// Validate file list size to prevent DoS
 				if (!Array.isArray(msg.files)) {
 					console.warn("Invalid file list received")
 					return
@@ -446,11 +416,8 @@ class FolderShare {
 	requestFile(path) {
 		const file = this.files.find((f) => f.path === path)
 		const fileName = path.split("/").pop()
-
-		// Create progress item
-		const progressId = path.replace(/[^a-zA-Z0-9]/g, "_")
+		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 		createProgressItem(progressId, fileName, file ? file.size : 0, "download")
-
 		for (const [, pc] of this.peers) {
 			pc.send({
 				type: "file-request",
@@ -466,19 +433,48 @@ class FolderShare {
 	}
 
 	async downloadFolder(folderPath) {
-		// Find all files in this folder
 		const filesInFolder = this.files.filter((f) => f.path.startsWith(folderPath + "/") || f.path === folderPath)
-
 		if (filesInFolder.length === 0) {
 			showError("No files found in this folder")
 			return
 		}
-
 		updateStatusText("peer-status-text", `Downloading ${filesInFolder.length} files...`)
+		const concurrency = 3
+		let activeDownloads = 0
+		let index = 0
 
-		for (const file of filesInFolder) {
-			this.requestFile(file.path)
+		const downloadNext = () => {
+			while (activeDownloads < concurrency && index < filesInFolder.length) {
+				const file = filesInFolder[index++]
+				activeDownloads++
+				this.requestFileWithCallback(file.path, () => {
+					activeDownloads--
+					downloadNext()
+				})
+			}
 		}
+
+		downloadNext()
+	}
+
+	requestFileWithCallback(path, onComplete) {
+		const file = this.files.find((f) => f.path === path)
+		const fileName = path.split("/").pop()
+		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+		createProgressItem(progressId, fileName, file ? file.size : 0, "download")
+		for (const [, pc] of this.peers) {
+			pc.send({
+				type: "file-request",
+				path,
+			})
+		}
+		this.pendingDownloads.set(path, {
+			chunks: [],
+			received: 0,
+			total: 0,
+			progressId,
+			onComplete,
+		})
 	}
 
 	async handleFileRequest(peerId, path) {
@@ -486,44 +482,27 @@ class FolderShare {
 			console.warn(`Rejected invalid path request: ${path}`)
 			return
 		}
-
-		// Rate limit download requests per peer
 		if (!this.downloadRateLimiter.isAllowed(peerId)) {
 			console.warn(`Download rate limit exceeded for peer ${peerId}`)
 			return
 		}
-
 		try {
 			const fileHandle = await getFileHandle(this.dirHandle, path)
 			const file = await fileHandle.getFile()
 			const pc = this.peers.get(peerId)
 			if (!pc) return
-
-			// Generate unique nonce for this transfer's HMAC
 			const nonce = generateNonce()
 			const hmacKey = await deriveHMACKey(this.cryptoKey, nonce)
-
-			const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
-
-			// Stream chunks one at a time instead of loading entire file
-			console.log(`Starting transfer: ${totalChunks} chunks`)
+			const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE))
 			for (let i = 0; i < totalChunks; i++) {
 				const start = i * CHUNK_SIZE
 				const end = Math.min(start + CHUNK_SIZE, file.size)
 				const chunk = await file.slice(start, end).arrayBuffer()
-				if ((i + 1) % 100 === 0 || i === totalChunks - 1) {
-					console.log(`Sending chunk ${i + 1}/${totalChunks}`)
-				}
 				await pc.sendChunk(path, i, totalChunks, chunk)
-				// Yield to event loop every chunk to prevent overwhelming receiver
 				await new Promise((r) => setTimeout(r, 0))
 			}
-			console.log("Transfer complete, computing HMAC...")
-
-			// Compute HMAC over entire file content
 			const fileData = await file.arrayBuffer()
-			const hmac = await computeHMAC(hmacKey, fileData)
-			console.log("HMAC computed")
+			const hmac = await computeHMAC(hmacKey, new Uint8Array(fileData))
 
 			pc.send({
 				type: "file-complete",
@@ -541,12 +520,9 @@ class FolderShare {
 	handleFileChunk(msg) {
 		const download = this.pendingDownloads.get(msg.path)
 		if (download) {
-			// msg.data is already a Uint8Array (raw binary, no base64)
 			download.chunks[msg.index] = msg.data
 			download.total = msg.total
 			download.received++
-
-			// Update progress
 			const progress = (download.received / download.total) * 100
 			updateProgressItem(download.progressId, progress, "download")
 		} else {
@@ -556,49 +532,35 @@ class FolderShare {
 
 	async handleFileComplete(msg) {
 		const download = this.pendingDownloads.get(msg.path)
-		console.log(`File complete received: ${msg.path}, got ${download?.received}/${download?.total} chunks`)
 		if (download && download.received === download.total) {
 			try {
-				console.log("Assembling file from chunks...")
-				// Create blob directly from chunks instead of copying to intermediate array
 				const blob = new Blob(download.chunks)
-				console.log(`Blob created: ${blob.size} bytes`)
-
-				// Verify HMAC integrity
 				if (msg.nonce && msg.hmac) {
 					setProgressVerifying(download.progressId, "download")
-					console.log("Verifying HMAC integrity...")
-
 					const hmacKey = await deriveHMACKey(this.cryptoKey, msg.nonce)
 					const fileData = await blob.arrayBuffer()
 					const isValid = await verifyHMAC(hmacKey, fileData, msg.hmac)
-
 					if (!isValid) {
-						console.error("HMAC verification failed!")
 						setProgressVerified(download.progressId, false, "download")
 						showError("File integrity check failed - the file may have been corrupted during transfer")
 						setTimeout(() => removeProgressItem(download.progressId, "download"), 3000)
 						this.pendingDownloads.delete(msg.path)
+						if (download.onComplete) download.onComplete()
 						return
 					}
-
-					console.log("HMAC verified successfully")
 					setProgressVerified(download.progressId, true, "download")
-					await new Promise((r) => setTimeout(r, 500)) // Show verified state briefly
+					await new Promise((r) => setTimeout(r, 500))
 				}
-
 				downloadBlob(blob, msg.name)
-				console.log("Download triggered")
-
-				// Complete progress
 				setTimeout(() => removeProgressItem(download.progressId, "download"), 1000)
-
 				this.pendingDownloads.delete(msg.path)
+				if (download.onComplete) download.onComplete()
 			} catch (e) {
 				console.error("Error assembling/downloading file:", e)
 				showError(`Download failed: ${e.message}`)
 				removeProgressItem(download.progressId, "download")
 				this.pendingDownloads.delete(msg.path)
+				if (download.onComplete) download.onComplete()
 			}
 		} else {
 			console.warn(`File complete but chunks missing: got ${download?.received}/${download?.total}`)
@@ -610,42 +572,32 @@ class FolderShare {
 			this.sendUploadResponse(peerId, msg.path, false, "Write access disabled")
 			return
 		}
-
 		if (!this.uploadRateLimiter.isAllowed(peerId)) {
 			this.sendUploadResponse(peerId, msg.path, false, "Rate limit exceeded")
 			return
 		}
-
 		if (!isValidUploadPath(msg.path)) {
 			this.sendUploadResponse(peerId, msg.path, false, "Invalid file path")
 			return
 		}
-
 		if (msg.size > UPLOAD_LIMITS.maxFileSize) {
 			this.sendUploadResponse(peerId, msg.path, false, `File too large (max ${formatSize(UPLOAD_LIMITS.maxFileSize)})`)
 			return
 		}
-
-		// Validate totalChunks is reasonable for declared size
 		const maxChunks = Math.ceil(msg.size / CHUNK_SIZE) + 1
 		if (msg.totalChunks > maxChunks || msg.totalChunks < 1) {
 			this.sendUploadResponse(peerId, msg.path, false, "Invalid chunk count")
 			return
 		}
-
 		const key = `${peerId}:${msg.path}`
-
-		// Clear any existing upload timeout for this key
 		const existing = this.pendingUploads.get(key)
 		if (existing && existing.timeout) {
 			clearTimeout(existing.timeout)
 		}
 
-		// Set timeout to cleanup abandoned uploads (5 minutes)
 		const timeout = setTimeout(
 			() => {
 				this.pendingUploads.delete(key)
-				console.log(`Upload timeout: ${key}`)
 			},
 			5 * 60 * 1000,
 		)
@@ -657,6 +609,7 @@ class FolderShare {
 			size: msg.size,
 			bytesReceived: 0,
 			path: msg.path,
+			progressId: msg.progressId,
 			timeout,
 		})
 	}
@@ -664,25 +617,16 @@ class FolderShare {
 	handleUploadChunk(peerId, msg) {
 		const key = `${peerId}:${msg.path}`
 		const upload = this.pendingUploads.get(key)
-
 		if (!upload) return
-
-		// Validate chunk index is within bounds
 		if (typeof msg.index !== "number" || msg.index < 0 || msg.index >= upload.total) {
 			console.warn(`Invalid chunk index ${msg.index} for upload ${key}`)
 			return
 		}
-
-		// Prevent duplicate chunks
 		if (upload.chunks[msg.index] !== undefined) {
 			console.warn(`Duplicate chunk ${msg.index} for upload ${key}`)
 			return
 		}
-
-		// msg.data is already a Uint8Array (raw binary)
 		const chunkData = msg.data
-
-		// Validate cumulative size doesn't exceed declared size
 		if (upload.bytesReceived + chunkData.length > upload.size) {
 			console.warn(`Upload size exceeded for ${key}`)
 			this.pendingUploads.delete(key)
@@ -690,7 +634,6 @@ class FolderShare {
 			this.sendUploadResponse(peerId, msg.path, false, "Upload size exceeded")
 			return
 		}
-
 		upload.chunks[msg.index] = chunkData
 		upload.received++
 		upload.bytesReceived += chunkData.length
@@ -699,17 +642,14 @@ class FolderShare {
 	async handleUploadComplete(peerId, msg) {
 		const key = `${peerId}:${msg.path}`
 		const upload = this.pendingUploads.get(key)
-
+		const progressId = upload?.progressId || msg.progressId
 		if (!upload || upload.received !== upload.total) {
-			this.sendUploadResponse(peerId, msg.path, false, "Incomplete upload")
+			this.sendUploadResponse(peerId, msg.path, false, "Incomplete upload", progressId)
 			if (upload && upload.timeout) clearTimeout(upload.timeout)
 			this.pendingUploads.delete(key)
 			return
 		}
-
-		// Clear the timeout since upload is completing
 		if (upload.timeout) clearTimeout(upload.timeout)
-
 		try {
 			const totalSize = upload.chunks.reduce((sum, c) => sum + c.length, 0)
 			const combined = new Uint8Array(totalSize)
@@ -718,35 +658,27 @@ class FolderShare {
 				combined.set(chunk, offset)
 				offset += chunk.length
 			}
-
-			// Verify HMAC integrity before writing
 			if (msg.nonce && msg.hmac) {
-				console.log("Verifying upload HMAC integrity...")
 				const hmacKey = await deriveHMACKey(this.cryptoKey, msg.nonce)
 				const isValid = await verifyHMAC(hmacKey, combined, msg.hmac)
-
 				if (!isValid) {
-					console.error("Upload HMAC verification failed!")
-					this.sendUploadResponse(peerId, msg.path, false, "Integrity check failed")
+					this.sendUploadResponse(peerId, msg.path, false, "Integrity check failed", progressId)
 					this.pendingUploads.delete(key)
 					return
 				}
-				console.log("Upload HMAC verified successfully")
 			}
-
 			await writeFile(this.dirHandle, upload.path, combined)
-
-			this.sendUploadResponse(peerId, msg.path, true, "Upload complete")
+			this.sendUploadResponse(peerId, msg.path, true, "Upload complete", progressId)
 			await this.updateFileList()
 		} catch (e) {
 			console.error("Upload write error:", e)
-			this.sendUploadResponse(peerId, msg.path, false, "Write failed")
+			this.sendUploadResponse(peerId, msg.path, false, "Write failed", progressId)
 		} finally {
 			this.pendingUploads.delete(key)
 		}
 	}
 
-	sendUploadResponse(peerId, path, success, message) {
+	sendUploadResponse(peerId, path, success, message, progressId) {
 		const pc = this.peers.get(peerId)
 		if (pc) {
 			pc.send({
@@ -754,13 +686,13 @@ class FolderShare {
 				path,
 				success,
 				message,
+				progressId,
 			})
 		}
 	}
 
 	handleUploadResponse(msg) {
-		const progressId = msg.path.replace(/[^a-zA-Z0-9]/g, "_")
-
+		const progressId = msg.progressId || msg.path.replace(/[^a-zA-Z0-9]/g, "_")
 		if (msg.success) {
 			setProgressVerified(progressId, true, "upload")
 			showUploadResponse(true, msg.message)
@@ -774,68 +706,43 @@ class FolderShare {
 
 	async uploadFile(file, targetPath = "") {
 		if (!file) return
-
-		// Handle both full path and target directory
-		let path
-		if (targetPath && targetPath !== file.name) {
-			// If targetPath includes the filename or is a directory path
-			if (targetPath.includes("/")) {
-				path = targetPath
-			} else {
-				path = targetPath
-			}
-		} else {
-			path = file.name
-		}
-
+		const path = targetPath || file.name
 		if (!isValidUploadPath(path)) {
 			showUploadResponse(false, "Invalid filename")
 			return
 		}
-
 		if (file.size > UPLOAD_LIMITS.maxFileSize) {
 			showUploadResponse(false, `File too large (max ${formatSize(UPLOAD_LIMITS.maxFileSize)})`)
 			return
 		}
-
-		// Create progress item
-		const progressId = path.replace(/[^a-zA-Z0-9]/g, "_")
+		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`
 		createProgressItem(progressId, path.split("/").pop(), file.size, "upload")
-
-		const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
-
+		const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE))
 		for (const [, pc] of this.peers) {
 			await pc.send({
 				type: "upload-start",
 				path,
 				size: file.size,
 				totalChunks,
+				progressId,
 			})
 		}
-
-		// Generate unique nonce for this transfer's HMAC
 		const nonce = generateNonce()
 		const hmacKey = await deriveHMACKey(this.cryptoKey, nonce)
-
-		// Stream chunks on-demand instead of loading entire file into memory
 		for (let i = 0; i < totalChunks; i++) {
 			const start = i * CHUNK_SIZE
 			const end = Math.min(start + CHUNK_SIZE, file.size)
 			const chunk = new Uint8Array(await file.slice(start, end).arrayBuffer())
-
 			for (const [, pc] of this.peers) {
 				await pc.sendUploadChunk(path, i, totalChunks, chunk)
 			}
-
-			// Update progress
 			const progress = ((i + 1) / totalChunks) * 100
 			updateProgressItem(progressId, progress, "upload")
 		}
 
-		// Compute HMAC over entire file content
 		setProgressVerifying(progressId, "upload")
 		const fileData = await file.arrayBuffer()
-		const hmac = await computeHMAC(hmacKey, fileData)
+		const hmac = await computeHMAC(hmacKey, new Uint8Array(fileData))
 
 		for (const [, pc] of this.peers) {
 			await pc.send({
@@ -843,11 +750,9 @@ class FolderShare {
 				path,
 				nonce,
 				hmac,
+				progressId,
 			})
 		}
-
-		// Show verifying state - will be updated when we get response
-		// The actual verification happens on the host side
 	}
 }
 

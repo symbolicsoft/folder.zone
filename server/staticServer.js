@@ -23,8 +23,6 @@ export async function serveStatic(pathname) {
 	}
 
 	const filePath = join(CLIENT_DIR, path)
-
-	// Prevent path traversal: ensure resolved path is within CLIENT_DIR
 	const resolvedClient = resolve(CLIENT_DIR)
 	const resolvedFile = resolve(filePath)
 	if (!resolvedFile.startsWith(resolvedClient + "/") && resolvedFile !== resolvedClient) {
@@ -36,7 +34,6 @@ export async function serveStatic(pathname) {
 	const ext = extname(filePath)
 
 	try {
-		// Also check realpath to prevent symlink attacks
 		const realFilePath = await realpath(filePath)
 		if (!realFilePath.startsWith(resolvedClient + "/") && realFilePath !== resolvedClient) {
 			return new Response("Forbidden", {
