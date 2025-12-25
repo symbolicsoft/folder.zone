@@ -123,13 +123,17 @@ export const websocketHandler = {
 						return
 					}
 					const peerId = generatePeerId()
+					const result = await joinRoom(msg.room, peerId, ws)
+					if (!result.success) {
+						ws.close()
+						return
+					}
 					ws.data.room = msg.room
 					ws.data.peerId = peerId
 					ws.send(JSON.stringify({
 						type: "peer-id",
 						peerId
 					}))
-					await joinRoom(msg.room, peerId, ws)
 					break
 				}
 				case "signal": {

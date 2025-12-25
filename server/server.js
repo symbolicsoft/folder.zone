@@ -7,7 +7,8 @@ import {
 	REDIS_URL
 } from "./config.js"
 import {
-	getRoomOwner
+	getRoomOwner,
+	startRoomRefreshInterval
 } from "./redis.js"
 import {
 	rooms
@@ -58,5 +59,7 @@ Bun.serve({
 
 	websocket: websocketHandler,
 })
+
+startRoomRefreshInterval(rooms)
 
 console.log(`Server running on port ${PORT} (machine: ${MACHINE_ID})`)

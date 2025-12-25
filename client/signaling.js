@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
-const BINARY_RELAY = 1
+import {
+	BINARY_RELAY
+} from "./config.js"
+
 const WS_BUFFER_THRESHOLD = 4 * 1024 * 1024
 const WS_BUFFER_CHECK_INTERVAL = 50
 const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 16000, 30000]

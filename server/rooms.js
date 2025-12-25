@@ -14,8 +14,14 @@ export const rooms = new Map()
 
 export async function joinRoom(roomId, peerId, ws) {
 	if (!rooms.has(roomId)) {
+		const claim = await claimRoom(roomId)
+		if (!claim.success) {
+			return {
+				success: false,
+				owner: claim.owner
+			}
+		}
 		rooms.set(roomId, new Map())
-		await claimRoom(roomId)
 	}
 	const room = rooms.get(roomId)
 	for (const [existingPeerId, peer] of room) {
@@ -34,6 +40,9 @@ export async function joinRoom(roomId, peerId, ws) {
 	}
 	room.set(peerId, ws)
 	console.log(`[${MACHINE_ID}] Peer ${peerId} joined room ${roomId} (${room.size} peers)`)
+	return {
+		success: true
+	}
 }
 
 export async function leaveRoom(roomId, peerId) {

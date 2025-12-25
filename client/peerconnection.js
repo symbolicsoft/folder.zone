@@ -207,7 +207,6 @@ export class PeerConnection {
 			const total = view.getUint32(9, true)
 			const chunkData = decrypted.slice(13)
 			if (!this.jsonChunkBuffers.has(messageId)) {
-				// Clean up incomplete buffers after 60 seconds
 				const timeout = setTimeout(() => {
 					this.jsonChunkBuffers.delete(messageId)
 				}, 60000)

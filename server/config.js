@@ -14,8 +14,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export const PORT = process.env.PORT || 3000
 export const CLIENT_DIR = join(__dirname, "..", "client")
 export const MACHINE_ID = process.env.FLY_MACHINE_ID || "local"
-export const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL
-export const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
+export const REDIS_URL = process.env.REDIS_URL
+export const REDIS_TOKEN = process.env.REDIS_TOKEN
 
 export const MIME_TYPES = {
 	".html": "text/html",
