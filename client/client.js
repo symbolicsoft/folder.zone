@@ -105,7 +105,7 @@ class FolderShare {
 		try {
 			this.cryptoKey = await importKey(keyBase64)
 		} catch (e) {
-			showError("Invalid share link")
+			showError("Invalid link")
 			return
 		}
 		this.setupPeerUpload()
@@ -203,9 +203,9 @@ class FolderShare {
 		this.roomId = generateRoomId()
 		const keyBase64 = await generateKey()
 		this.cryptoKey = await importKey(keyBase64)
-		const shareLink = `${location.origin}/#${this.roomId}:${keyBase64}`
-		document.getElementById("share-link").value = shareLink
-		document.getElementById("share-panel").hidden = false
+		const partakeLink = `${location.origin}/#${this.roomId}:${keyBase64}`
+		document.getElementById("partake-link").value = partakeLink
+		document.getElementById("partake-panel").hidden = false
 		this.signaling = new Signaling(
 			(msg) => this.handleSignalingMessage(msg, true),
 			(error) => showError(error),
@@ -252,7 +252,7 @@ class FolderShare {
 	}
 
 	copyLink() {
-		const input = document.getElementById("share-link")
+		const input = document.getElementById("partake-link")
 		const btn = document.getElementById("copy-link")
 		input.select()
 		navigator.clipboard.writeText(input.value)
@@ -272,7 +272,7 @@ class FolderShare {
 	}
 
 	showQRCode() {
-		const link = document.getElementById("share-link").value
+		const link = document.getElementById("partake-link").value
 		if (!link) return
 
 		const qrContainer = document.getElementById("qr-code")

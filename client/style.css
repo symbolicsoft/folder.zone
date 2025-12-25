@@ -543,13 +543,13 @@ body {
 	height: 18px;
 }
 
-.share-panel {
+.partake-panel {
 	padding: 20px 24px;
 	border-top: 1px solid var(--border-color);
 	background: var(--bg-tertiary);
 }
 
-.share-label {
+.partake-label {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -561,19 +561,19 @@ body {
 	margin-bottom: 12px;
 }
 
-.share-label svg {
+.partake-label svg {
 	width: 16px;
 	height: 16px;
 	opacity: 0.7;
 }
 
-.share-row {
+.partake-row {
 	display: flex;
 	gap: 12px;
 	margin-bottom: 16px;
 }
 
-.share-input {
+.partake-input {
 	flex: 1;
 	padding: 12px 16px;
 	background: var(--bg-secondary);
@@ -586,12 +586,12 @@ body {
 	transition: var(--transition);
 }
 
-.share-input:focus {
+.partake-input:focus {
 	border-color: var(--accent);
 	box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.share-options {
+.partake-options {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -1268,35 +1268,35 @@ body {
 		height: 16px;
 	}
 
-	.share-panel {
+	.partake-panel {
 		padding: 12px 16px;
 	}
 
-	.share-label {
+	.partake-label {
 		font-size: 11px;
 		margin-bottom: 8px;
 	}
 
-	.share-row {
+	.partake-row {
 		flex-direction: row;
 		flex-wrap: wrap;
 		gap: 8px;
 		margin-bottom: 12px;
 	}
 
-	.share-row .share-input {
+	.partake-row .partake-input {
 		flex: 1 1 100%;
 	}
 
-	.share-row .btn {
+	.partake-row .btn {
 		flex: 1;
 	}
 
-	.share-row .btn-icon {
+	.partake-row .btn-icon {
 		flex: 0 0 auto;
 	}
 
-	.share-input {
+	.partake-input {
 		padding: 10px 12px;
 		font-size: 12px;
 	}
@@ -1310,7 +1310,7 @@ body {
 		height: 18px;
 	}
 
-	.share-options {
+	.partake-options {
 		flex-direction: column;
 		gap: 10px;
 		align-items: flex-start;
