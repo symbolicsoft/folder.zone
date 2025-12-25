@@ -2,7 +2,7 @@
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
 export const CHUNK_SIZE = 64 * 1024
-export const WEBRTC_TIMEOUT = 8000
+export const WEBRTC_TIMEOUT = 5000
 export const WEBRTC_BUFFER_THRESHOLD = 4 * 1024 * 1024
 export const WEBRTC_BUFFER_LOW = 1024 * 1024
 
@@ -66,3 +66,5 @@ export const FILE_LIST_LIMITS = {
 	maxFiles: 50000,
 	maxFileListSize: 5 * 1024 * 1024,
 }
+
+export const BINARY_RELAY = 1
