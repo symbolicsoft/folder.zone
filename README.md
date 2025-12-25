@@ -14,6 +14,10 @@ folder.zone enables real-time folder sharing directly from your browser. Select 
 
 All data is encrypted client-side before transmission. The server facilitates peer discovery and connection signaling but never receives encryption keys. In relay fallback mode, the server forwards only ciphertext it cannot decrypt.
 
+### Try it now at [folder.zone](https://folder.zone)
+
+A free public instance is available at **[folder.zone](https://folder.zone)**. In addition to peer-to-peer transfers, it provides encrypted relay servers in 🇫🇷 **France**, 🇯🇵 **Japan**, 🇺🇸 **California**, and 🇮🇳 **India** for fallback connectivity when direct connections aren't possible.
+
 ## Security Model
 
 ### Threat Model
