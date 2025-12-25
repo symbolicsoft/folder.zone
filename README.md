@@ -2,23 +2,11 @@
   <img src="client/images/favicon.png" alt="folder.zone" width="128" height="128" />
 </p>
 
-<h1 align="center">folder.zone</h1>
+# folder.zone
 
-<p align="center">
-  <strong>End-to-end encrypted, peer-to-peer folder sharing in the browser.</strong>
-</p>
+**End-to-end encrypted, peer-to-peer folder sharing in the browser.**
 
-<p align="center">
-  <a href="https://folder.zone">folder.zone</a> &nbsp;·&nbsp;
-  <a href="#security-model">Security Model</a> &nbsp;·&nbsp;
-  <a href="#cryptographic-design">Cryptographic Design</a> &nbsp;·&nbsp;
-  <a href="#self-hosting">Self-Hosting</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="AGPL-3.0" />
-  <img src="https://img.shields.io/badge/status-beta-orange" alt="Beta" />
-</p>
+![AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue) ![Beta](https://img.shields.io/badge/status-beta-orange)
 
 ## Overview
 
@@ -231,19 +219,12 @@ fly secrets set UPSTASH_REDIS_REST_TOKEN=<token>
 
 **Beta software.** The implementation uses standard cryptographic primitives via Web Crypto API, but the protocol has not undergone independent security audit.
 
-**Not recommended for:**
-- High-risk threat models requiring audited security
-- Adversaries capable of compromising your browser
-- Scenarios where link interception is likely
-
-For sensitive applications, consider [OnionShare](https://onionshare.org/) or similar audited tools.
-
 ## License
 
 **AGPL-3.0-or-later**
 
 Public deployment of modified versions requires source disclosure. See [LICENSE](LICENSE).
 
-<p align="center">
-  <a href="https://nadim.computer"><strong>Nadim Kobeissi</strong></a>
-</p>
+---
+
+[**Nadim Kobeissi**](https://nadim.computer)
