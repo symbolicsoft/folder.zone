@@ -30,6 +30,7 @@ import {
 } from "./upload.js"
 import {
 	CHUNK_SIZE,
+	MAX_FILE_SIZE,
 	UPLOAD_LIMITS,
 	DOWNLOAD_RATE_LIMIT,
 	FILE_LIST_LIMITS
@@ -415,6 +416,10 @@ class FolderShare {
 
 	requestFile(path) {
 		const file = this.files.find((f) => f.path === path)
+		if (file && file.size > MAX_FILE_SIZE) {
+			showError(`File too large (max ${formatSize(MAX_FILE_SIZE)})`)
+			return
+		}
 		const fileName = path.split("/").pop()
 		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 		createProgressItem(progressId, fileName, file ? file.size : 0, "download")
@@ -459,6 +464,11 @@ class FolderShare {
 
 	requestFileWithCallback(path, onComplete) {
 		const file = this.files.find((f) => f.path === path)
+		if (file && file.size > MAX_FILE_SIZE) {
+			showError(`File too large (max ${formatSize(MAX_FILE_SIZE)})`)
+			if (onComplete) onComplete()
+			return
+		}
 		const fileName = path.split("/").pop()
 		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 		createProgressItem(progressId, fileName, file ? file.size : 0, "download")
@@ -489,6 +499,10 @@ class FolderShare {
 		try {
 			const fileHandle = await getFileHandle(this.dirHandle, path)
 			const file = await fileHandle.getFile()
+			if (file.size > MAX_FILE_SIZE) {
+				console.warn(`Rejected file request: file too large (${file.size} bytes)`)
+				return
+			}
 			const pc = this.peers.get(peerId)
 			if (!pc) return
 			const nonce = generateNonce()
@@ -580,8 +594,8 @@ class FolderShare {
 			this.sendUploadResponse(peerId, msg.path, false, "Invalid file path")
 			return
 		}
-		if (msg.size > UPLOAD_LIMITS.maxFileSize) {
-			this.sendUploadResponse(peerId, msg.path, false, `File too large (max ${formatSize(UPLOAD_LIMITS.maxFileSize)})`)
+		if (msg.size > MAX_FILE_SIZE) {
+			this.sendUploadResponse(peerId, msg.path, false, `File too large (max ${formatSize(MAX_FILE_SIZE)})`)
 			return
 		}
 		const maxChunks = Math.ceil(msg.size / CHUNK_SIZE) + 1
@@ -711,8 +725,8 @@ class FolderShare {
 			showUploadResponse(false, "Invalid filename")
 			return
 		}
-		if (file.size > UPLOAD_LIMITS.maxFileSize) {
-			showUploadResponse(false, `File too large (max ${formatSize(UPLOAD_LIMITS.maxFileSize)})`)
+		if (file.size > MAX_FILE_SIZE) {
+			showUploadResponse(false, `File too large (max ${formatSize(MAX_FILE_SIZE)})`)
 			return
 		}
 		const progressId = `${path.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`

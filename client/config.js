@@ -55,8 +55,9 @@ export const MAX_JSON_SIZE = 48 * 1024
 
 export const DOWNLOAD_RATE_LIMIT = 60
 
+export const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+
 export const UPLOAD_LIMITS = {
-	maxFileSize: 2 * 1024 * 1024 * 1024,
 	maxFilenameLength: 255,
 	maxPathDepth: 10,
 	rateLimitPerMinute: 30,
