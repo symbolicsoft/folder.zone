@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright 2026 Nadim Kobeissi <nadim@symbolic.software>
 
+import {
+	hmac
+} from "@noble/hashes/hmac"
+import {
+	sha256
+} from "@noble/hashes/sha256"
+
 export function bufferToBase64(buffer) {
 	const bytes = new Uint8Array(buffer)
 	const chars = new Array(bytes.length)
@@ -20,6 +27,33 @@ export function base64ToBuffer(base64) {
 		bytes[i] = binary.charCodeAt(i)
 	}
 	return bytes
+}
+
+const HMAC_INFO = new TextEncoder().encode("file-hmac")
+
+function timingSafeEqual(a, b) {
+	if (a.length !== b.length) {
+		return false
+	}
+	let diff = 0
+	for (let i = 0; i < a.length; i++) {
+		diff |= a[i] ^ b[i]
+	}
+	return diff === 0
+}
+
+export function createHMAC(keyBytes) {
+	const hmacState = hmac.create(sha256, keyBytes)
+	hmacState.final = () => hmacState.digest()
+	return hmacState
+}
+
+export function verifyHMACBytes(actualBytes, expectedHMAC) {
+	const expectedBytes = base64ToBuffer(expectedHMAC)
+	if (expectedBytes.length !== 32 || actualBytes.length !== 32) {
+		return false
+	}
+	return timingSafeEqual(actualBytes, expectedBytes)
 }
 
 export async function generateKey() {
@@ -82,34 +116,30 @@ export function generateNonce() {
 	return bufferToBase64(bytes)
 }
 
-export async function deriveHMACKey(sessionKey, nonce) {
+export async function deriveHMACKeyBytes(sessionKey, nonce) {
 	const sessionKeyBytes = await crypto.subtle.exportKey("raw", sessionKey)
 	const nonceBytes = base64ToBuffer(nonce)
 	const keyMaterial = await crypto.subtle.importKey("raw", sessionKeyBytes, {
 		name: "HKDF"
-	}, false, ["deriveKey"])
+	}, false, ["deriveBits"])
 
-	return crypto.subtle.deriveKey({
+	const bits = await crypto.subtle.deriveBits({
 		name: "HKDF",
 		hash: "SHA-256",
 		salt: nonceBytes,
-		info: new TextEncoder().encode("file-hmac")
-	}, keyMaterial, {
-		name: "HMAC",
-		hash: "SHA-256",
-		length: 256
-	}, false, ["sign", "verify"])
+		info: HMAC_INFO
+	}, keyMaterial, 256)
+	return new Uint8Array(bits)
 }
 
-export async function computeHMAC(hmacKey, data) {
-	const hmac = await crypto.subtle.sign("HMAC", hmacKey, data)
-	return bufferToBase64(new Uint8Array(hmac))
+export function computeHMAC(keyBytes, data) {
+	const hmac = createHMAC(keyBytes)
+	hmac.update(data)
+	return bufferToBase64(hmac.final())
 }
 
-export async function verifyHMAC(hmacKey, data, expectedHMAC) {
-	const expectedBytes = base64ToBuffer(expectedHMAC)
-	if (expectedBytes.length !== 32) {
-		return false
-	}
-	return crypto.subtle.verify("HMAC", hmacKey, expectedBytes, data)
+export function verifyHMAC(keyBytes, data, expectedHMAC) {
+	const hmac = createHMAC(keyBytes)
+	hmac.update(data)
+	return verifyHMACBytes(hmac.final(), expectedHMAC)
 }
